@@ -2,7 +2,9 @@ name: scam-shield
 
 services:
   evals:
-    build: ./evals
+    build:
+      context: .
+      dockerfile: evals/Dockerfile
     # The dataset check needs no network, secrets or write access.
     network_mode: none
     read_only: true
@@ -10,3 +12,20 @@ services:
       - /tmp
     volumes:
       - ./evals/datasets:/evals/datasets:ro
+
+  checker:
+    build:
+      context: .
+      dockerfile: evals/Dockerfile
+    # Needs the network and the API key, and writes only to evals/reports.
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./evals/datasets:/evals/datasets:ro
+      - ./evals/redteam:/evals/redteam:ro
+      - ./evals/reports:/evals/reports

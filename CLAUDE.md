@@ -16,6 +16,7 @@ Scam protection for older people and their families (AU first). Multilingual, ph
 ## Context docs
 - Product brief: @docs/product-brief.md
 - Data sources research: @docs/data-sources.md
+- Task tracker: @docs/tasks.md (update it in the same PR as the work, including deferred work)
 
 ## Current phase
-Phase 0 — Foundations: product brief, ADRs, threat model, privacy design, first 200-message labelled eval set.
+Phase 1 — Checker MVP, in progress. Remaining Phase 0 work is tracked in docs/tasks.md and is still required.

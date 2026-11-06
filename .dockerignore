@@ -1,0 +1,4 @@
+*
+!evals/runners/
+!packages/agents/scam_shield/
+**/__pycache__/
