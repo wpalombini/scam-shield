@@ -2,18 +2,32 @@
 
 Scam protection for older people and their families, starting in Australia.
 
-**Status:** Phase 0 (foundations). There is no checker to use yet. See the [product brief](docs/product-brief.md).
+**Status:** early development. The first checker runs from the command line and isn't ready for real use. See the [product brief](docs/product-brief.md), [tasks](docs/tasks.md) and [threat model](docs/threat-model.md).
 
-## Check the eval dataset
+## Try the checker
 
-Requires Docker.
+Requires Docker and an [OpenRouter](https://openrouter.ai) API key. Copy `.env.example` to `.env` and add your key, ideally with a low spending limit.
 
 ```bash
-docker compose run --rm --build evals
-docker compose run --rm --build evals python -m unittest discover -s runners
+docker compose run --rm --build checker python -m scam_shield "Hi Mum, I lost my phone. Please send money to my new account today."
 ```
 
-The first command validates `evals/datasets/*.jsonl` and reports progress towards the 200-message Phase 0 target. The second runs the validator's tests.
+Submitted text goes to the model provider through OpenRouter. Don't use real messages containing personal details.
+
+## Run the evals
+
+```bash
+# Validate the dataset and report progress (free, no network)
+docker compose run --rm --build evals
+
+# Run the tests (free, no network)
+docker compose run --rm --build evals python -m unittest discover -s runners
+
+# Score the checker on the dataset and red-team set (uses your API key)
+docker compose run --rm --build checker python runners/run_checker_evals.py
+```
+
+Scored runs save a report to `evals/reports`, with record ids and numbers but no message text.
 
 ## Licence
 
