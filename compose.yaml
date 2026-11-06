@@ -1,0 +1,12 @@
+name: scam-shield
+
+services:
+  evals:
+    build: ./evals
+    # The dataset check needs no network, secrets or write access.
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./evals/datasets:/evals/datasets:ro
