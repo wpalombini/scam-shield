@@ -1,0 +1,12 @@
+# Tuned prompts and scam-pattern intelligence never enter this repo
+config/private/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
