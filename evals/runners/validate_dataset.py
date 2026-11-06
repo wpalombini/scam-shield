@@ -15,6 +15,7 @@ CATEGORIES = {
     "scam": {
         "bank_impersonation",
         "delivery_toll",
+        "fake_notification",
         "government_impersonation",
         "hi_mum",
         "investment",
@@ -110,7 +111,7 @@ def load_dataset(directory):
 def summarise(records):
     """Return a printable progress summary."""
     lines = [f"Messages: {len(records)}/{TARGET_MESSAGES}"]
-    for field in ("label", "channel", "source", "language"):
+    for field in ("label", "category", "channel", "source", "language"):
         counts = Counter(str(record.get(field)) for record in records)
         joined = ", ".join(f"{key}={counts[key]}" for key in sorted(counts))
         lines.append(f"  {field}: {joined}")
