@@ -5,7 +5,15 @@ import json
 import threading
 import unittest
 
-from scam_shield.checker import CHECK_FAILED, MAX_MESSAGE_CHARS, NO_RED_FLAGS, RED_FLAGS, RESULT_TEXT, ModelError
+from scam_shield.checker import (
+    CHECK_FAILED,
+    MAX_MESSAGE_CHARS,
+    NO_RED_FLAGS,
+    RED_FLAGS,
+    RESULT_TEXT,
+    SYSTEM_PROMPT,
+    ModelError,
+)
 from server import MAX_BODY_BYTES, make_server
 
 
@@ -134,15 +142,26 @@ class CheckTests(ServerTestCase):
         )
 
     def test_blank_sender_fields_keep_the_plain_request(self):
-        self.start(FakeClient(output(NO_RED_FLAGS)))
-        response, _ = self.request(
-            "POST", "/api/check", json.dumps({"message": "Hi", "channel": "", "sender": ""}), {"Content-Type": "application/json"}
-        )
-        self.assertEqual(response.status, 200)
+        for sender in ("", "   "):
+            with self.subTest(sender=sender):
+                self.start(FakeClient(output(NO_RED_FLAGS)))
+                captured = []
+                original = self.client.complete
+                self.client.complete = lambda messages: captured.append(messages) or original(messages)
+                response, _ = self.request(
+                    "POST",
+                    "/api/check",
+                    json.dumps({"message": "Hi", "channel": "", "sender": sender}),
+                    {"Content-Type": "application/json"},
+                )
+                self.assertEqual(response.status, 200)
+                self.assertEqual(captured[0][0]["content"], SYSTEM_PROMPT)
+                self.assertEqual(json.loads(captured[0][1]["content"]), {"message": "Hi"})
+                self.assertIn("sender_given=False", self.logs.getvalue())
 
     def test_invalid_sender_fields_are_refused(self):
         self.start(FakeClient(output(RED_FLAGS)))
-        for extra in ({"channel": "pigeon"}, {"channel": 5}, {"sender": "x" * 255}, {"sender": ["0491"]}):
+        for extra in ({"channel": "pigeon"}, {"channel": 5}, {"channel": 0}, {"sender": "x" * 255}, {"sender": ["0491"]}, {"sender": []}, {"sender": False}):
             with self.subTest(extra=extra):
                 response, _ = self.request(
                     "POST", "/api/check", json.dumps({"message": "Hi", **extra}), {"Content-Type": "application/json"}

@@ -15,10 +15,10 @@
 
     <form id="form">
       <label for="message">Message to check</label>
-      <p id="message-note" class="note">Test version. Your message and any sender details go to an AI company to be checked. We don't save them, but that company may keep a copy for a time to prevent misuse. Please remove names, account numbers and other personal details first.</p>
+      <p id="message-note" class="note">Test version. Your message and any sender details go to AI service companies to be checked. We don't save them, but those companies may keep a copy for a time to prevent misuse. Please remove names, account numbers and other personal details from the message first.</p>
       <textarea id="message" rows="8" aria-describedby="message-note" required></textarea>
       <fieldset>
-        <legend>Who sent it? Optional, but it can help</legend>
+        <legend>About the sender (optional)</legend>
         <label for="channel">How it arrived</label>
         <select id="channel">
           <option value="">Not sure</option>
@@ -28,7 +28,7 @@
           <option value="voicemail">Voicemail</option>
           <option value="social">Social media</option>
         </select>
-        <label for="sender">Sender's phone number or email address</label>
+        <label for="sender">Sender's name, phone number or email address, as shown on the message</label>
         <input id="sender" type="text" autocomplete="off" aria-describedby="sender-note">
         <p id="sender-note" class="note">Senders can be faked, so a normal-looking sender doesn't prove a message is real.</p>
       </fieldset>

@@ -189,10 +189,27 @@ class SenderTests(unittest.TestCase):
         self.assertEqual(check_message("Hi", client, sender=["0491"]).error, "invalid_sender")
         self.assertIsNone(client.messages)
 
-    def test_sender_is_removed_from_reasons(self):
-        client = FakeClient(output(RED_FLAGS, ["Came from 0491 570 156"]))
-        result = check_message("Pay", client, sender="0491 570 156")
-        self.assertNotIn("0491", result.reasons[0])
+    def test_sender_is_removed_from_reasons_in_any_format(self):
+        cases = (
+            ("0491 570 156", "Came from 0491 570 156"),
+            ("0491 570 156", "Came from 0491.570.156"),
+            ("0491 570 156", "Came from 0491\u2013570\u2013156"),
+            ("0491.570.156", "Came from 0491570156"),
+            ("(03) 5550 1234", "Came from (03) 5550 1234"),
+            ("131 444", "Came from 131444"),
+            ("19788", "Came from 19788"),
+            ("@scammer99", "Came from @SCAMMER99"),
+            ("HarbourBnk", "Came from harbourbnk"),
+        )
+        for sender, reason in cases:
+            with self.subTest(sender=sender, reason=reason):
+                client = FakeClient(output(RED_FLAGS, [reason]))
+                shown = check_message("Pay", client, sender=sender).reasons[0]
+                self.assertEqual(shown, "Came from [removed]")
+
+    def test_other_text_stays_when_sender_is_removed(self):
+        client = FakeClient(output(RED_FLAGS, ["Asks for $718.90 within 24 hours"]))
+        self.assertEqual(check_message("Pay", client, sender="19788").reasons[0], "Asks for $718.90 within 24 hours")
 
 
 class InjectionFramingTests(unittest.TestCase):

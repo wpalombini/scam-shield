@@ -87,7 +87,8 @@ _CONTACT_DETAILS = re.compile(
     r"|\b(?:https?|hxxps?)://\S+"
     r"|\bwww(?:\.|\[\.\])\S+"
     r"|\b[\w-]+(?:(?:\.|\[\.\])[\w-]+)*(?:\.|\[\.\])[a-zA-Z]{2,}\b(?:/\S*)?"
-    r"|\+?\d[\d\s()-]{6,}\d",
+    r"|\b13\d\s?\d{3}\b"
+    r"|\+?\(?\d[\d\s().\u2010-\u2015-]{6,}\d",
 )
 
 
@@ -115,6 +116,18 @@ class CheckResult:
 def remove_contact_details(reason):
     """Stop a scammer's link or number being shown as part of our answer."""
     return _CONTACT_DETAILS.sub("[removed]", reason)
+
+
+def remove_sender(reason, sender):
+    """Remove the submitted sender, in any spacing or punctuation, from a reason."""
+    if not sender:
+        return reason
+    reason = re.sub(rf"(?<!\w){re.escape(sender)}(?!\w)", "[removed]", reason, flags=re.IGNORECASE)
+    digits = re.sub(r"\D", "", sender)
+    if len(digits) >= 5:
+        pattern = r"\D{0,3}".join(digits)
+        reason = re.sub(rf"(?<!\d){pattern}(?!\d)", "[removed]", reason)
+    return reason
 
 
 class OpenRouterClient:
@@ -250,7 +263,7 @@ def check_message(text, client, knowledge=None, channel=None, sender=None):
     # Reasons are only shown with red flags, so they can't soften a "no red flags" result.
     shown = []
     if status == RED_FLAGS:
-        cleaned = (remove_contact_details(r).strip() for r in reasons if isinstance(r, str))
+        cleaned = (remove_contact_details(remove_sender(r, sender)).strip() for r in reasons if isinstance(r, str))
         shown = [reason for reason in cleaned if reason][:MAX_REASONS]
     return CheckResult(
         status,
