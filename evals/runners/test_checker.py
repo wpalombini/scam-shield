@@ -8,6 +8,8 @@ from scam_shield.checker import (
     CHECK_FAILED,
     MAX_MESSAGE_CHARS,
     MAX_OUTPUT_TOKENS,
+    MAX_SENDER_CHARS,
+    SENDER_PROMPT,
     NO_RED_FLAGS,
     RED_FLAGS,
     RESULT_TEXT,
@@ -163,6 +165,34 @@ class OpenRouterClientTests(unittest.TestCase):
             self.complete("length")
         self.assertEqual(str(caught.exception), "output_truncated")
         self.assertEqual(caught.exception.cost_usd, 0.002)
+
+
+class SenderTests(unittest.TestCase):
+    def test_sender_details_go_in_the_user_turn_with_their_instructions(self):
+        client = FakeClient(output(RED_FLAGS))
+        check_message("Pay", client, channel="sms", sender=" 0491 570 156 ")
+        self.assertEqual(
+            json.loads(client.messages[1]["content"]), {"message": "Pay", "received_via": "sms", "sender": "0491 570 156"}
+        )
+        self.assertEqual(client.messages[0]["content"], SYSTEM_PROMPT + SENDER_PROMPT)
+
+    def test_no_sender_keeps_the_original_request(self):
+        client = FakeClient(output(RED_FLAGS))
+        check_message("Pay", client, channel=None, sender="   ")
+        self.assertEqual(json.loads(client.messages[1]["content"]), {"message": "Pay"})
+        self.assertEqual(client.messages[0]["content"], SYSTEM_PROMPT)
+
+    def test_invalid_sender_details_skip_the_model(self):
+        client = FakeClient(output(RED_FLAGS))
+        self.assertEqual(check_message("Hi", client, channel="pigeon").error, "invalid_channel")
+        self.assertEqual(check_message("Hi", client, sender="x" * (MAX_SENDER_CHARS + 1)).error, "invalid_sender")
+        self.assertEqual(check_message("Hi", client, sender=["0491"]).error, "invalid_sender")
+        self.assertIsNone(client.messages)
+
+    def test_sender_is_removed_from_reasons(self):
+        client = FakeClient(output(RED_FLAGS, ["Came from 0491 570 156"]))
+        result = check_message("Pay", client, sender="0491 570 156")
+        self.assertNotIn("0491", result.reasons[0])
 
 
 class InjectionFramingTests(unittest.TestCase):

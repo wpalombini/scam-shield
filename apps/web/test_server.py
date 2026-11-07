@@ -117,9 +117,45 @@ class CheckTests(ServerTestCase):
         self.assertEqual(status, 503)
         self.assertNotIn("status", body)
 
+    def test_sender_details_reach_the_model_as_data(self):
+        self.start(FakeClient(output(RED_FLAGS)))
+        captured = []
+        original = self.client.complete
+        self.client.complete = lambda messages: captured.append(messages) or original(messages)
+        response, _ = self.request(
+            "POST",
+            "/api/check",
+            json.dumps({"message": "Pay", "channel": "sms", "sender": "0491 570 156"}),
+            {"Content-Type": "application/json"},
+        )
+        self.assertEqual(response.status, 200)
+        self.assertEqual(
+            json.loads(captured[0][1]["content"]), {"message": "Pay", "received_via": "sms", "sender": "0491 570 156"}
+        )
+
+    def test_blank_sender_fields_keep_the_plain_request(self):
+        self.start(FakeClient(output(NO_RED_FLAGS)))
+        response, _ = self.request(
+            "POST", "/api/check", json.dumps({"message": "Hi", "channel": "", "sender": ""}), {"Content-Type": "application/json"}
+        )
+        self.assertEqual(response.status, 200)
+
+    def test_invalid_sender_fields_are_refused(self):
+        self.start(FakeClient(output(RED_FLAGS)))
+        for extra in ({"channel": "pigeon"}, {"channel": 5}, {"sender": "x" * 255}, {"sender": ["0491"]}):
+            with self.subTest(extra=extra):
+                response, _ = self.request(
+                    "POST", "/api/check", json.dumps({"message": "Hi", **extra}), {"Content-Type": "application/json"}
+                )
+                self.assertEqual(response.status, 400)
+        self.assertEqual(self.client.calls, 0)
+
     def test_message_text_is_never_logged(self):
         self.start(FakeClient(output(RED_FLAGS, ["Creates urgency"])))
         self.check("SECRET MESSAGE TEXT")
+        self.request(
+            "POST", "/api/check", json.dumps({"message": "Hi", "sender": "SECRET-SENDER"}), {"Content-Type": "application/json"}
+        )
         self.request("GET", "/?q=SECRET-IN-URL")
         self.request("POST", "/SECRET-PATH", b"{}", {"Content-Type": "application/json"})
         self.request("POST", "/api/check", b"SECRET not json", {"Content-Type": "application/json"})

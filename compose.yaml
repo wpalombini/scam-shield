@@ -12,6 +12,7 @@ services:
       - /tmp
     volumes:
       - ./evals/datasets:/evals/datasets:ro
+      - ./evals/sender:/evals/sender:ro
 
   db:
     # Private scam-pattern data. Not published to the host, and not started unless named.
@@ -63,6 +64,7 @@ services:
     volumes:
       - ./evals/datasets:/evals/datasets:ro
       - ./evals/redteam:/evals/redteam:ro
+      - ./evals/sender:/evals/sender:ro
       - ./evals/reports:/evals/reports
 
   web:
