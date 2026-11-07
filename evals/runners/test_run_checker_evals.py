@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from run_checker_evals import build_report
+from run_checker_evals import build_report, summarise
 from scam_shield.checker import CHECK_FAILED, NO_RED_FLAGS, RED_FLAGS, CheckResult
 
 
@@ -62,6 +62,9 @@ class BuildReportTests(unittest.TestCase):
         self.assertEqual(self.report["cost_usd_total"], 0.06)
         self.assertEqual(self.report["latency_ms_p95"], 900)
         self.assertEqual(self.report["errors"], ["network"])
+
+    def test_summary_lists_failed_checks(self):
+        self.assertIn("Failed checks: 1 (s3)", summarise(self.report))
 
     def test_report_never_contains_message_text(self):
         self.assertNotIn("SECRET TEXT", json.dumps(self.report))

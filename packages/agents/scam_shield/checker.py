@@ -74,6 +74,10 @@ _CONTACT_DETAILS = re.compile(
 class ModelError(Exception):
     """A model call failed. The message is a short code and never holds user text."""
 
+    def __init__(self, code, cost_usd=0.0):
+        super().__init__(code)
+        self.cost_usd = cost_usd
+
 
 @dataclass
 class CheckResult:
@@ -135,10 +139,14 @@ class OpenRouterClient:
             time.sleep(2**attempt)
 
         try:
-            content = payload["choices"][0]["message"]["content"]
+            choice = payload["choices"][0]
+            content = choice["message"]["content"]
         except (KeyError, IndexError, TypeError):
             raise ModelError("invalid_response") from None
-        return content, float((payload.get("usage") or {}).get("cost") or 0)
+        cost = float((payload.get("usage") or {}).get("cost") or 0)
+        if choice.get("finish_reason") == "length":
+            raise ModelError("output_truncated", cost)
+        return content, cost
 
 
 def client_from_env():
@@ -149,9 +157,14 @@ def client_from_env():
     return OpenRouterClient(api_key, os.environ.get("SCAM_SHIELD_MODEL") or DEFAULT_MODEL)
 
 
-def _failed(error, model="", latency_ms=0):
+def _failed(error, model="", latency_ms=0, cost_usd=0.0):
     return CheckResult(
-        CHECK_FAILED, RESULT_TEXT[CHECK_FAILED], model=model, latency_ms=latency_ms, error=error
+        CHECK_FAILED,
+        RESULT_TEXT[CHECK_FAILED],
+        model=model,
+        cost_usd=cost_usd,
+        latency_ms=latency_ms,
+        error=error,
     )
 
 
@@ -171,7 +184,7 @@ def check_message(text, client):
     try:
         content, cost = client.complete(messages)
     except ModelError as error:
-        return _failed(str(error), model, _elapsed_ms(started))
+        return _failed(str(error), model, _elapsed_ms(started), error.cost_usd)
 
     latency_ms = _elapsed_ms(started)
     try:
@@ -179,9 +192,9 @@ def check_message(text, client):
         status = output["status"]
         reasons = output["reasons"]
     except (json.JSONDecodeError, KeyError, TypeError):
-        return _failed("invalid_output", model, latency_ms)
+        return _failed("invalid_output", model, latency_ms, cost)
     if status not in (RED_FLAGS, NO_RED_FLAGS) or not isinstance(reasons, list):
-        return _failed("invalid_output", model, latency_ms)
+        return _failed("invalid_output", model, latency_ms, cost)
 
     # Reasons are only shown with red flags, so they can't soften a "no red flags" result.
     shown = []
