@@ -2,7 +2,7 @@
 
 _Public summary, 6 Nov 2026. Review this whenever a new product surface, tool or data flow is added._
 
-**Status:** design stage. The checker isn't built yet, so every defence below is planned and untested unless a later version says otherwise. Results will be published as the evals are built.
+**Status:** early development. A first checker exists, but every defence below is planned and untested unless stated otherwise. Results will be published as the evals are built.
 
 Specific weaknesses, detection details and unfixed findings are kept private, so this page doesn't help attackers.
 
