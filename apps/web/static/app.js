@@ -5,6 +5,8 @@ const BUTTON_TEXT = "Check this message";
 
 const form = document.getElementById("form");
 const message = document.getElementById("message");
+const channel = document.getElementById("channel");
+const sender = document.getElementById("sender");
 const submit = document.getElementById("submit");
 const status = document.getElementById("status");
 const error = document.getElementById("error");
@@ -71,7 +73,7 @@ form.addEventListener("submit", async (event) => {
     const response = await fetch("/api/check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: message.value }),
+      body: JSON.stringify({ message: message.value, channel: channel.value, sender: sender.value }),
       signal: check.signal,
     });
     const data = await response.json();
@@ -92,10 +94,14 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-message.addEventListener("input", discardCheck);
+for (const field of [message, channel, sender]) {
+  field.addEventListener("input", discardCheck);
+}
 
 document.getElementById("clear").addEventListener("click", () => {
   message.value = "";
+  channel.value = "";
+  sender.value = "";
   discardCheck();
   message.focus();
 });

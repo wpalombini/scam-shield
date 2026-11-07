@@ -12,7 +12,15 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from scam_shield.checker import CHECK_FAILED, MAX_MESSAGE_CHARS, RESULT_TEXT, check_message, client_from_env
+from scam_shield.checker import (
+    CHANNELS,
+    CHECK_FAILED,
+    MAX_MESSAGE_CHARS,
+    MAX_SENDER_CHARS,
+    RESULT_TEXT,
+    check_message,
+    client_from_env,
+)
 from scam_shield.knowledge import knowledge_from_env
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -90,7 +98,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._send_json(413, {"error": "That message is too long."})
 
         try:
-            message = json.loads(self.rfile.read(length)).get("message")
+            request = json.loads(self.rfile.read(length))
+            message, channel, sender = request.get("message"), request.get("channel"), request.get("sender")
         except (ValueError, RecursionError, AttributeError):
             return self._send_json(400, {"error": "The request couldn't be read."})
         if not isinstance(message, str) or not message.strip():
@@ -100,12 +109,18 @@ class Handler(BaseHTTPRequestHandler):
                 413,
                 {"error": "That message is too long to check. Please paste a shorter part, including any links or phone numbers."},
             )
+        channel = channel or None
+        sender = sender or None
+        if channel is not None and (not isinstance(channel, str) or channel not in CHANNELS):
+            return self._send_json(400, {"error": "Choose how the message arrived from the list."})
+        if sender is not None and (not isinstance(sender, str) or len(sender) > MAX_SENDER_CHARS):
+            return self._send_json(400, {"error": "Enter one phone number or email address as the sender."})
         client = self.server.client
         if client is None:
             return self._send_json(503, {"error": "The checker isn't set up yet. Add an API key to .env."})
 
         try:
-            result = check_message(message, client, self.server.knowledge)
+            result = check_message(message, client, self.server.knowledge, channel, sender)
         except Exception as error:
             # A bug must still give the "couldn't check" wording. Only the type is logged.
             return self._send_json(
@@ -118,7 +133,7 @@ class Handler(BaseHTTPRequestHandler):
             {"status": result.status, "text": result.text, "reasons": result.reasons},
             f"status={result.status} error={result.error or 'none'} "
             f"latency_ms={result.latency_ms} cost_usd={result.cost_usd} patterns={result.knowledge_used} "
-            f"lookup_failed={result.knowledge_failed}",
+            f"lookup_failed={result.knowledge_failed} sender_given={sender is not None}",
         )
 
 

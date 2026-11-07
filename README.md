@@ -36,6 +36,12 @@ docker compose run --rm --build --no-deps web python -m unittest test_server
 docker compose run --rm --build checker python runners/run_checker_evals.py
 ```
 
+The sender set scores the same messages with and without sender details:
+
+```bash
+docker compose run --rm --build checker python runners/run_sender_evals.py
+```
+
 Scored runs save a report to `evals/reports`, with record ids and numbers but no message text.
 
 ## Knowledge base

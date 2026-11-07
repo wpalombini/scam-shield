@@ -38,6 +38,25 @@ Tested from our test environment with an identified user agent. Working policy, 
 
 **Volume:** the tested sources that describe scams published about 7 entries in the last 30 days, before removing duplicates. That's about 2 a week, well below the earlier estimate of 5–20 new variants a week. The higher figure would need faster sources, such as messages people submit or social media, neither of which we can use yet.
 
+## Sender and link lookups (researched 7 Nov 2026)
+
+Desk research from public docs, not tested with real lookups. Prices are USD. No service found has shown Australian scam-report coverage, and no public Australian government number feed was found. Treat any hit as a weak signal that can add suspicion, and a clean result as adding nothing.
+
+| Service | Gives | Cost | Decision |
+|---|---|---|---|
+| [libphonenumber](https://github.com/google/libphonenumber) | Number type, locally. Doesn't track current carriers | Free | **Use first** |
+| [Google Web Risk](https://cloud.google.com/web-risk/pricing) | Known-bad URLs | 100,000 free a month | **Use first**, for links in messages |
+| [RDAP](https://about.rdap.org/) | Domain age for many TLDs. [.au creation dates are hidden and automated queries prohibited](https://www.auda.org.au/whois-policy) | Free | **Use later**, for non-.au domains |
+| [IPQualityScore](https://www.ipqualityscore.com/plans) | Phone and email fraud scores | Free 1,000 a month. Paid about $99 for 5,000, from a third-party source | **Trial only.** [Terms](https://www.ipqualityscore.com/terms-of-service) bar republishing responses and allow model use, and [retention is about a year](https://www.ipqualityscore.com/privacy-policy) |
+| [Twilio Lookup](https://www.twilio.com/en-us/user-authentication-identity/pricing/lookup) | Line type and carrier, no reputation | $0.008 per request | **Fallback** |
+| Hiya, Telesign, Prove, tellows | Reputation scores | Unpublished | **Not assessed**; needs sales contact |
+| SEON, Vonage Number Insights | Too costly, or being retired | | **Don't use** |
+| Community number sites | Terms not confirmed | | **Don't scrape** |
+
+Google's spam labels have no third-party API that we found. A pasted email address carries no headers, so we can't tell whether SPF, DKIM or DMARC passed for that message.
+
+**Risks:** [spoofing](https://www.acma.gov.au/calling-line-identification-and-spoofing) and [recycled numbers](https://www.acma.gov.au/recycled-phone-numbers) can point at innocent people, so results must never call a number a scammer. [Phone numbers are personal information](https://www.oaic.gov.au/privacy/your-privacy-rights/your-personal-information/what-is-personal-information), so vendor retention conflicts with process-and-delete unless agreed otherwise. Get legal advice before launch.
+
 ## Government statistics (aggregates, no message text)
 | Region | Source | Access |
 |---|---|---|
