@@ -32,6 +32,10 @@ class SenderReportTests(unittest.TestCase):
         self.assertEqual(scores["spoofs_flagged"], 0)
         self.assertEqual(scores["wrong"], ["s1"])
         self.assertEqual(self.report["text_only"]["spoofs_flagged"], 1)
+        self.assertEqual(self.report["text_only"]["flagged_ids"], ["s1"])
+
+    def test_a_sender_clearing_a_flagged_message_is_reported(self):
+        self.assertEqual(self.report["cleared_by_sender"], ["s1"])
 
     def test_report_never_contains_message_text(self):
         self.assertNotIn("SECRET", json.dumps(self.report))

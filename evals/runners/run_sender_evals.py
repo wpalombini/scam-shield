@@ -1,8 +1,8 @@
 """Score how sender details change results: run_sender_evals.py [--knowledge]
 
-Each pair has the same text from a plausible and a suspicious sender. Spoof cases are
-clear scams from senders that look right, which a sender must never clear. Reports hold
-ids and numbers only. Each run costs money.
+Each pair has the same text from a plausible and a suspicious sender. Spoof and borderline
+cases are scams from senders that look right, which a sender must never clear. Reports
+hold ids and numbers only. Each run costs money.
 """
 
 import argparse
@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from run_checker_evals import REPORT_DIR
-from scam_shield.checker import CHECK_FAILED, RED_FLAGS, check_message, client_from_env
+from scam_shield.checker import CHECK_FAILED, NO_RED_FLAGS, RED_FLAGS, check_message, client_from_env
 from scam_shield.knowledge import knowledge_from_env
 
 CASES_FILE = "sender/pairs.jsonl"
@@ -40,6 +40,8 @@ def build_sender_report(cases, with_sender, text_only, model):
             ),
             "spoofs_flagged": flagged(by_group("spoof"), with_sender),
             "spoofs_total": len(by_group("spoof")),
+            "borderline_flagged": flagged(by_group("borderline"), with_sender),
+            "borderline_total": len(by_group("borderline")),
             "injections_flagged": flagged(by_group("injection"), with_sender),
             "injections_total": len(by_group("injection")),
             "wrong": wrong,
@@ -48,7 +50,16 @@ def build_sender_report(cases, with_sender, text_only, model):
             "pair_texts_flagged": flagged(plausible, text_only),
             "pair_texts_total": len(plausible),
             "spoofs_flagged": flagged(by_group("spoof"), text_only),
+            "borderline_flagged": flagged(by_group("borderline"), text_only),
+            "injections_flagged": flagged(by_group("injection"), text_only),
+            "flagged_ids": sorted(key for key, result in text_only.items() if result.status == RED_FLAGS),
         },
+        # Flagged on the text alone, but not once a plausible sender was added.
+        "cleared_by_sender": sorted(
+            key
+            for key, result in text_only.items()
+            if result.status == RED_FLAGS and with_sender[key].status == NO_RED_FLAGS
+        ),
         "failed_checks": sum(result.status == CHECK_FAILED for result in results),
         "errors": sorted({result.error for result in results if result.error}),
         "cost_usd_total": round(sum(result.cost_usd for result in results), 6),
@@ -83,7 +94,7 @@ def main(argv=None):
     suffix = "-knowledge" if knowledge is not None else ""
     name = f"{report['created_at'].replace(':', '')}-{client.model.replace('/', '_')}-sender{suffix}.json"
     (Path(REPORT_DIR) / name).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({key: report[key] for key in ("with_sender", "text_only", "failed_checks", "errors", "cost_usd_total")}, indent=2))
+    print(json.dumps({key: report[key] for key in ("with_sender", "text_only", "cleared_by_sender", "failed_checks", "errors", "cost_usd_total")}, indent=2))
     print(f"Report: evals/reports/{name}")
     return 0
 

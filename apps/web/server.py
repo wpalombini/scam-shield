@@ -109,12 +109,13 @@ class Handler(BaseHTTPRequestHandler):
                 413,
                 {"error": "That message is too long to check. Please paste a shorter part, including any links or phone numbers."},
             )
-        channel = channel or None
-        sender = sender or None
+        channel = None if channel == "" else channel
+        sender = None if sender == "" else sender
         if channel is not None and (not isinstance(channel, str) or channel not in CHANNELS):
             return self._send_json(400, {"error": "Choose how the message arrived from the list."})
         if sender is not None and (not isinstance(sender, str) or len(sender) > MAX_SENDER_CHARS):
-            return self._send_json(400, {"error": "Enter one phone number or email address as the sender."})
+            return self._send_json(400, {"error": "That sender is too long. Enter just the name, phone number or email address."})
+        sender = sender.strip() or None if sender is not None else None
         client = self.server.client
         if client is None:
             return self._send_json(503, {"error": "The checker isn't set up yet. Add an API key to .env."})

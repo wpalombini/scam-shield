@@ -36,7 +36,7 @@ docker compose run --rm --build --no-deps web python -m unittest test_server
 docker compose run --rm --build checker python runners/run_checker_evals.py
 ```
 
-The sender set scores the same messages with and without sender details:
+The sender set is 38 AI-written cases, not yet reviewed by a person. It scores the same messages with and without sender details:
 
 ```bash
 docker compose run --rm --build checker python runners/run_sender_evals.py
