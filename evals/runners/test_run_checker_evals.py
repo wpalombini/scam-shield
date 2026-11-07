@@ -38,6 +38,7 @@ class BuildReportTests(unittest.TestCase):
     def test_failed_checks_are_counted_separately(self):
         overall = self.report["overall"]
         self.assertEqual(overall["failed_checks"], 1)
+        self.assertEqual(overall["failed_ids"], ["s3"])
         self.assertEqual(overall["recall"], 0.5)
         self.assertEqual(overall["missed_scams"], ["s2"])
 

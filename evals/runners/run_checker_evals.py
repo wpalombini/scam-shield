@@ -38,6 +38,7 @@ def _detection(pairs):
         "scams": len(scams),
         "legit": len(legit),
         "failed_checks": sum(res.status == CHECK_FAILED for _, res in pairs),
+        "failed_ids": [rec["id"] for rec, res in pairs if res.status == CHECK_FAILED],
         "recall": _rate(caught, caught + len(missed)),
         "false_positive_rate": _rate(len(false_alarms), checked_legit),
         "missed_scams": missed,
@@ -85,7 +86,7 @@ def summarise(report):
         [
             f"Model: {report['model']}",
             f"Messages: {overall['messages']} ({overall['scams']} scam, {overall['legit']} legit)",
-            f"Failed checks: {overall['failed_checks']}",
+            f"Failed checks: {overall['failed_checks']} ({', '.join(overall['failed_ids']) or 'none'})",
             f"Recall: {overall['recall']} (real {real['recall']}, synthetic {synthetic['recall']})",
             f"False-positive rate: {overall['false_positive_rate']} "
             f"(hard negatives {report['hard_negatives']['false_positive_rate']})",
