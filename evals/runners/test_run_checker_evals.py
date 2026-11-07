@@ -1,7 +1,8 @@
 import json
 import unittest
+from unittest import mock
 
-from run_checker_evals import build_report, summarise
+from run_checker_evals import _run, build_report, summarise
 from scam_shield.checker import CHECK_FAILED, NO_RED_FLAGS, RED_FLAGS, CheckResult
 
 
@@ -18,6 +19,19 @@ def record(record_id, label, source="synthetic", hard_negative=False):
 
 def result(status, cost=0.01, latency=100, error=""):
     return CheckResult(status, "", cost_usd=cost, latency_ms=latency, error=error)
+
+
+class PacingTests(unittest.TestCase):
+    def test_max_per_minute_waits_between_checks(self):
+        records = [record("s1", "scam"), record("s2", "scam")]
+        with (
+            mock.patch("run_checker_evals.check_message", return_value=result(RED_FLAGS)),
+            mock.patch("run_checker_evals.time.monotonic", return_value=0),
+            mock.patch("run_checker_evals.time.sleep") as sleep,
+        ):
+            pairs = _run(records, client=None, max_per_minute=20)
+        self.assertEqual(len(pairs), 2)
+        self.assertEqual(sleep.call_args_list, [mock.call(3.0), mock.call(3.0)])
 
 
 class BuildReportTests(unittest.TestCase):
