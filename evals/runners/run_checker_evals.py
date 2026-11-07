@@ -102,8 +102,15 @@ def summarise(report):
     )
 
 
+def _positive_int(value):
+    number = int(value)
+    if number < 1:
+        raise argparse.ArgumentTypeError("must be 1 or more")
+    return number
+
+
 def _run(records, client, max_per_minute=None):
-    if max_per_minute:
+    if max_per_minute is not None:
         results = []
         for record in records:
             started = time.monotonic()
@@ -119,7 +126,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--limit", type=int, help="check only the first N dataset messages")
     parser.add_argument(
-        "--max-per-minute", type=int, help="check one at a time, staying under a provider's rate limit"
+        "--max-per-minute", type=_positive_int, help="check one at a time, staying under a provider's rate limit"
     )
     args = parser.parse_args(argv)
 
