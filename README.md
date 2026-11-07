@@ -2,7 +2,7 @@
 
 Scam protection for older people and their families, starting in Australia.
 
-**Status:** early development. The first checker runs from the command line and isn't ready for real use. See the [product brief](docs/product-brief.md), [tasks](docs/tasks.md) and [threat model](docs/threat-model.md).
+**Status:** early development. The first checker runs from the command line or a local page and isn't ready for real use. See the [product brief](docs/product-brief.md), [tasks](docs/tasks.md) and [threat model](docs/threat-model.md).
 
 ## Try the checker
 

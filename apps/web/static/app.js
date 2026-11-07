@@ -1,22 +1,22 @@
 "use strict";
 
-const TITLES = {
-  red_flags: "Red flags found",
-  no_red_flags: "No red flags found",
-  check_failed: "We couldn't check this message",
-};
+const STATUSES = new Set(["red_flags", "no_red_flags", "check_failed"]);
+const BUTTON_TEXT = "Check this message";
 
 const form = document.getElementById("form");
 const message = document.getElementById("message");
 const submit = document.getElementById("submit");
+const status = document.getElementById("status");
 const error = document.getElementById("error");
 const result = document.getElementById("result");
 const reasonsBlock = document.getElementById("reasons-block");
 const reasons = document.getElementById("reasons");
+let checking = false;
 
 function showError(text) {
   error.textContent = text;
   error.hidden = false;
+  message.focus();
 }
 
 function clearOutput() {
@@ -28,7 +28,6 @@ function clearOutput() {
 
 function showResult(data) {
   result.className = "result " + data.status;
-  document.getElementById("result-title").textContent = TITLES[data.status];
   document.getElementById("result-text").textContent = data.text;
   reasons.replaceChildren(
     ...data.reasons.map((reason) => {
@@ -44,9 +43,12 @@ function showResult(data) {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (checking) return;
+  checking = true;
   clearOutput();
-  submit.disabled = true;
+  submit.setAttribute("aria-disabled", "true");
   submit.textContent = "Checking…";
+  status.textContent = "Checking your message. This can take a minute.";
   try {
     const response = await fetch("/api/check", {
       method: "POST",
@@ -54,16 +56,18 @@ form.addEventListener("submit", async (event) => {
       body: JSON.stringify({ message: message.value }),
     });
     const data = await response.json();
-    if (response.ok && data.status in TITLES) {
+    if (response.ok && STATUSES.has(data.status)) {
       showResult(data);
     } else {
-      showError(data.error || "We couldn't check this message. Please try again.");
+      showError(data.error || "We couldn't check this message. Please try again. Until then, don't click links or call numbers in the message.");
     }
   } catch {
     showError("We couldn't reach the checker. Please try again. Until then, don't click links or call numbers in the message.");
   } finally {
-    submit.disabled = false;
-    submit.textContent = "Check this message";
+    checking = false;
+    status.textContent = "";
+    submit.removeAttribute("aria-disabled");
+    submit.textContent = BUTTON_TEXT;
   }
 });
 

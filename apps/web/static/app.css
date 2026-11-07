@@ -4,7 +4,7 @@
   --surface: #ffffff;
   --ink: #14242e;
   --muted: #4f616c;
-  --line: #9fb0b9;
+  --line: #6b7f8a;
   --accent: #0f5e78;
   --accent-ink: #ffffff;
   --warn: #9c2f1c;
@@ -21,7 +21,7 @@
     --surface: #18242c;
     --ink: #e8eff2;
     --muted: #a9b9c2;
-    --line: #4a5e6a;
+    --line: #7a909c;
     --accent: #5cb8d6;
     --accent-ink: #08212b;
     --warn: #f0917f;
@@ -83,7 +83,7 @@ button {
 }
 
 button.secondary { background: transparent; color: var(--ink); border-color: var(--line); }
-button:disabled { opacity: 0.6; cursor: progress; }
+button[aria-disabled="true"] { opacity: 0.6; cursor: progress; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
 .error { margin: 0; padding: 0.75rem 1rem; border-radius: 8px; background: var(--caution-soft); }
@@ -97,4 +97,6 @@ button:disabled { opacity: 0.6; cursor: progress; }
 .result ul { margin: 0.25rem 0 0; padding-left: 1.5rem; }
 .result li + li { margin-top: 0.4rem; }
 
-footer { color: var(--muted); font-size: 1rem; }
+.note { margin: 0; color: var(--muted); font-size: 1rem; }
+#status:empty { display: none; }
+#status { margin: 0; }

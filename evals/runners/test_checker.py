@@ -1,3 +1,4 @@
+import http.client
 import io
 import json
 import unittest
@@ -117,6 +118,27 @@ class FailureTests(unittest.TestCase):
 
 
 class OpenRouterClientTests(unittest.TestCase):
+    def test_dropped_connections_raise_a_network_error(self):
+        for error in (ConnectionResetError(), http.client.IncompleteRead(b""), TimeoutError()):
+            with (
+                self.subTest(error=type(error).__name__),
+                mock.patch("scam_shield.checker.urllib.request.urlopen", side_effect=error),
+                mock.patch("scam_shield.checker.time.sleep"),
+                self.assertRaises(ModelError) as caught,
+            ):
+                OpenRouterClient("key").complete([])
+            self.assertEqual(str(caught.exception), "network")
+
+    def test_unreadable_responses_raise_invalid_response(self):
+        for body in (b"\xff", b"not json", b'{"choices": []}', b"[]"):
+            with (
+                self.subTest(body=body),
+                mock.patch("scam_shield.checker.urllib.request.urlopen", return_value=io.BytesIO(body)),
+                self.assertRaises(ModelError) as caught,
+            ):
+                OpenRouterClient("key").complete([])
+            self.assertEqual(str(caught.exception), "invalid_response")
+
     def complete(self, finish_reason):
         payload = {
             "choices": [{"finish_reason": finish_reason, "message": {"content": "{}"}}],

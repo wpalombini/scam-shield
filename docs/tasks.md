@@ -12,10 +12,10 @@ Update this file in the same PR as the work it describes.
 
 ## Next: data foundation
 
-Do these before any more features, in this order:
+Do these before any more product features, in this order. The local page is a testing aid:
 
 1. [x] Source check: results in `docs/data-sources.md`. Start with Scamwatch, the ATO and CommBank, once CommBank's terms are read
-2. [x] Grow the eval set to 100 messages, split evenly between scam and legit. Latest report for the default model: `evals/reports/2026-11-07T011406Z-anthropic_claude-haiku-5.5.json`
+2. [x] Grow the eval set to 100 messages, split evenly between scam and legit. Latest report for the default model: `evals/reports/2026-11-07T022641Z-anthropic_claude-haiku-5.5.json`
 3. [x] Local checker page, to try the checker by hand: `docker compose up --build web`
 4. [ ] Knowledge base in Postgres on local Docker, kept out of the public repo, with scam types, variants, sources and dates from 2–3 independent sources
 5. [ ] Run the evals with and without the knowledge base, and only build on it if results improve
@@ -28,12 +28,12 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 |---|---|---|
 | Privacy design | Deferred until after the first checker | Before any public launch or stored user data |
 | ADRs: stack, model routing, data retention, eval gates | Deferred until after the first checker | Before the knowledge base is built |
-| 100 more labelled messages | At 100 of 200 | Add in batches alongside the build |
-| Relabel 10% and record the disagreement rate | The first review was a quick pass: 100 of 100 agreed in about 4 minutes on 7 Nov 2026 | Before quoting results as a performance claim |
+| 100 more labelled messages, each with owner review | At 100 of 200 | Add in batches alongside the build |
+| Relabel 10% and record the disagreement rate | Not yet done. The owner's review of the first 100 was a quick pass: 100 of 100 agreed in about 4 minutes on 7 Nov 2026. It doesn't replace this check | Before quoting results as a performance claim |
 | Private config backup | Deferred until a working system is running. Until then, private files and knowledge base data exist only on one machine | Once the checker and knowledge base run end to end |
 | Security contact | No launch yet | Before launch |
 | Product brief questions: iPhone or Android, brand name and domain | Not blocking the build | Before the browser-installable app ships |
-| Review recurring false alarms: syn-040, syn-045, syn-048, syn-065, syn-066 and syn-076 | Found in the 100-message evals. syn-048 is ambiguous by design | Before the knowledge base comparison |
+| Review recurring false alarms: syn-040, syn-045, syn-048, syn-065, syn-066, syn-074 and syn-076 | Found in the 100-message evals. syn-048 is ambiguous by design | Before the knowledge base comparison |
 | Pin a provider and report repeated eval runs | Identical runs varied | Before the knowledge base comparison |
 | Source real legit messages, with consent or clear licences | All 50 are synthetic, so real-world false alarms are unmeasured | Before quoting results as a performance claim |
 | Repeat the Sol comparison on a larger set with real legit messages | The current set can't settle it | Before changing the default model |
