@@ -16,6 +16,8 @@ DEFAULT_MODEL = "anthropic/claude-haiku-5.5"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 MAX_MESSAGE_CHARS = 8000
 MAX_REASONS = 5
+# Includes the model's reasoning tokens, so it needs room beyond the answer itself.
+MAX_OUTPUT_TOKENS = 1500
 
 RED_FLAGS = "red_flags"
 NO_RED_FLAGS = "no_red_flags"
@@ -103,7 +105,7 @@ class OpenRouterClient:
                 "model": self.model,
                 "messages": messages,
                 "response_format": RESPONSE_FORMAT,
-                "max_tokens": 400,
+                "max_tokens": MAX_OUTPUT_TOKENS,
                 "usage": {"include": True},
                 "provider": {"require_parameters": True, "data_collection": "deny"},
             }
