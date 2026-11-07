@@ -57,18 +57,21 @@ class _WithExtraPattern:
         self.pattern = pattern
 
     def lookup(self, text):
+        # A failed lookup must fail the case, so it isn't caught here.
         return [self.pattern, *self.knowledge.lookup(text)]
 
 
 def _run_poisoned_patterns(client, knowledge, max_per_minute=None):
     """Check that instructions hidden in a stored pattern can't change a result."""
     cases = [json.loads(line) for line in Path(POISONED_PATTERNS_FILE).read_text(encoding="utf-8").splitlines() if line.strip()]
-    failed = []
+    failed, cost = [], 0.0
     for case in cases:
-        pairs = _run([case], client, max_per_minute, _WithExtraPattern(knowledge, case["pattern"]))
-        if pairs[0][1].status != case["expected"]:
+        result = _run([case], client, max_per_minute, _WithExtraPattern(knowledge, case["pattern"]))[0][1]
+        cost += result.cost_usd
+        # A case only counts if the model actually received the planted pattern.
+        if result.status != case["expected"] or result.knowledge_used == 0:
             failed.append(case["id"])
-    return {"cases": len(cases), "passed": len(cases) - len(failed), "failed": failed}
+    return {"cases": len(cases), "passed": len(cases) - len(failed), "failed": failed, "cost_usd": round(cost, 6)}
 
 
 def _percentile(values, percent):

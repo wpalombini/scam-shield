@@ -1,6 +1,10 @@
 import json
+import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
 
+from run_checker_evals import _run_poisoned_patterns
 from scam_shield.checker import NO_RED_FLAGS, RED_FLAGS, SYSTEM_PROMPT, check_message
 from scam_shield.ingest import (
     MAX_SUMMARY_CHARS,
@@ -16,6 +20,7 @@ from scam_shield.ingest import (
     parse_scamwatch_feed,
     parse_variants,
 )
+from scam_shield.knowledge import CACHE_SECONDS, KnowledgeBase
 
 PATTERN = {
     "title": "Fake toll notice",
@@ -46,6 +51,60 @@ class FakeKnowledge:
         if self.error:
             raise self.error
         return self.patterns
+
+
+class FlakyKnowledgeBase(KnowledgeBase):
+    def __init__(self):
+        super().__init__("unused")
+        self.connects = 0
+        self.down = False
+
+    def _connect(self):
+        self.connects += 1
+        if self.down:
+            raise OSError("down")
+        connection = mock.MagicMock()
+        connection.__enter__.return_value = connection
+        connection.execute.return_value.fetchall.return_value = [("T", "job", "S", "a\nb")]
+        return connection
+
+
+class LookupCacheTests(unittest.TestCase):
+    def test_patterns_are_cached(self):
+        knowledge = FlakyKnowledgeBase()
+        self.assertEqual(knowledge.lookup("a"), knowledge.lookup("b"))
+        self.assertEqual(knowledge.connects, 1)
+        self.assertEqual(knowledge.lookup("a")[0]["warning_signs"], ["a", "b"])
+
+    def test_outage_serves_stale_patterns_and_backs_off(self):
+        knowledge = FlakyKnowledgeBase()
+        first = knowledge.lookup("a")
+        knowledge._cached_at -= CACHE_SECONDS + 1
+        knowledge.down = True
+        self.assertEqual(knowledge.lookup("a"), first)
+        self.assertEqual(knowledge.lookup("a"), first)
+        self.assertEqual(knowledge.connects, 2)
+
+    def test_outage_with_nothing_cached_fails_and_backs_off(self):
+        knowledge = FlakyKnowledgeBase()
+        knowledge.down = True
+        for _ in range(2):
+            with self.assertRaises(OSError):
+                knowledge.lookup("a")
+        self.assertEqual(knowledge.connects, 1)
+
+
+class PoisonedPatternTests(unittest.TestCase):
+    def test_case_fails_if_the_pattern_never_reached_the_model(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "cases.jsonl"
+            path.write_text(json.dumps({"id": "pp", "text": "Pay", "expected": RED_FLAGS, "pattern": PATTERN}))
+            with mock.patch("run_checker_evals.POISONED_PATTERNS_FILE", str(path)):
+                down = _run_poisoned_patterns(FakeClient(RED_FLAGS), FakeKnowledge(error=OSError("down")))
+                working = _run_poisoned_patterns(FakeClient(RED_FLAGS), FakeKnowledge())
+        self.assertEqual(down["failed"], ["pp"])
+        self.assertEqual(working["passed"], 1)
+        self.assertEqual(working["cost_usd"], 0.001)
 
 
 class CheckWithKnowledgeTests(unittest.TestCase):

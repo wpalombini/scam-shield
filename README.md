@@ -51,6 +51,13 @@ docker compose --profile knowledge up -d db
 docker compose run --rm --build checker python runners/run_checker_evals.py --knowledge
 ```
 
+To run the database tests, point them at a database they can wipe, separate from the main one:
+
+```bash
+docker compose exec db psql -U scamshield -c "CREATE DATABASE scamshield_test"
+docker compose run --rm --build checker sh -c 'SCAM_SHIELD_TEST_DATABASE_URL="${SCAM_SHIELD_DATABASE_URL%/*}/scamshield_test" python -m unittest runners/test_knowledge_db.py'
+```
+
 To use the patterns on the checker page, also set `SCAM_SHIELD_KNOWLEDGE=on`, and run `docker compose --profile knowledge up -d --build db web`. Alerts used by the eval set are held out, but other alerts can cover the same scams, so some overlap with the eval set remains.
 
 ## Licence

@@ -255,7 +255,8 @@ def collect_documents():
 
 
 def _clean(text, limit):
-    return remove_contact_details(" ".join(text.split()))[:limit].strip()
+    # Postgres can't store NUL characters, which a model could return.
+    return remove_contact_details(" ".join(text.replace("\x00", " ").split()))[:limit].strip()
 
 
 def parse_variants(content):
@@ -355,6 +356,9 @@ def extract_pending(connection, client):
         ORDER BY d.id
         """
     ).fetchall()
+    # End the read transaction, so each document below commits on its own. Model calls
+    # then hold no locks, and a later failure can't undo extractions already paid for.
+    connection.commit()
     added = failures = 0
     for document_id, title, content, published_on, has_patterns in pending:
         try:
