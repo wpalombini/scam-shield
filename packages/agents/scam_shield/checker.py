@@ -4,6 +4,7 @@ The model only chooses a status and lists reasons. People see fixed wording, so
 the model can't tell them something is "safe". Message text is never logged.
 """
 
+import http.client
 import json
 import os
 import re
@@ -131,19 +132,19 @@ class OpenRouterClient:
             except urllib.error.HTTPError as error:
                 if error.code not in (429, 500, 502, 503, 504) or attempt == self.retries:
                     raise ModelError(f"http_{error.code}") from None
-            except (urllib.error.URLError, TimeoutError):
+            except (OSError, http.client.HTTPException):
                 if attempt == self.retries:
                     raise ModelError("network") from None
-            except json.JSONDecodeError:
+            except ValueError:
                 raise ModelError("invalid_response") from None
             time.sleep(2**attempt)
 
         try:
             choice = payload["choices"][0]
             content = choice["message"]["content"]
-        except (KeyError, IndexError, TypeError):
+            cost = float((payload.get("usage") or {}).get("cost") or 0)
+        except (KeyError, IndexError, TypeError, ValueError, AttributeError):
             raise ModelError("invalid_response") from None
-        cost = float((payload.get("usage") or {}).get("cost") or 0)
         if choice.get("finish_reason") == "length":
             raise ModelError("output_truncated", cost)
         return content, cost

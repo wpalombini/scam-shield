@@ -72,6 +72,10 @@ class StaticFileTests(ServerTestCase):
                 response, _ = self.request("GET", path)
                 self.assertEqual(response.status, 404)
 
+    def test_text_box_does_not_silently_cut_long_pastes(self):
+        _, body = self.request("GET", "/")
+        self.assertNotIn(b"maxlength", body)
+
     def test_page_never_says_safe(self):
         for path in ("/", "/app.js"):
             _, body = self.request("GET", path)
@@ -94,6 +98,14 @@ class CheckTests(ServerTestCase):
         self.assertEqual(body["status"], CHECK_FAILED)
         self.assertEqual(body["text"], RESULT_TEXT[CHECK_FAILED])
 
+    def test_unexpected_error_gives_the_check_failed_wording(self):
+        self.start(FakeClient(error=RuntimeError("SECRET")))
+        status, body = self.check("Pay now")
+        self.assertEqual(status, 200)
+        self.assertEqual(body["status"], CHECK_FAILED)
+        self.assertIn("error=RuntimeError", self.logs.getvalue())
+        self.assertNotIn("SECRET", self.logs.getvalue())
+
     def test_response_has_no_internal_details(self):
         self.start(FakeClient(output(NO_RED_FLAGS)))
         _, body = self.check("Hello")
@@ -109,6 +121,9 @@ class CheckTests(ServerTestCase):
         self.start(FakeClient(output(RED_FLAGS, ["Creates urgency"])))
         self.check("SECRET MESSAGE TEXT")
         self.request("GET", "/?q=SECRET-IN-URL")
+        self.request("POST", "/SECRET-PATH", b"{}", {"Content-Type": "application/json"})
+        self.request("POST", "/api/check", b"SECRET not json", {"Content-Type": "application/json"})
+        self.request("POST", "/api/check", b"[" * 60000, {"Content-Type": "application/json"})
         logs = self.logs.getvalue()
         self.assertIn("status=red_flags", logs)
         self.assertNotIn("SECRET", logs)
@@ -131,10 +146,11 @@ class RejectedRequestTests(ServerTestCase):
                 self.assertEqual(self.client.calls, 0)
 
     def test_invalid_json(self):
-        for body in (b"not json", b"[]", b"\xff"):
+        for body in (b"not json", b"[]", b"\xff", b"[" * 60000, b"[" + b"1" * 5000 + b"]"):
             with self.subTest(body=body):
                 response, _ = self.request("POST", "/api/check", body, {"Content-Type": "application/json"})
                 self.assert_rejected(response.status, 400)
+        self.assertNotIn("Traceback", self.logs.getvalue())
 
     def test_wrong_content_type(self):
         response, _ = self.request(
@@ -143,14 +159,41 @@ class RejectedRequestTests(ServerTestCase):
         self.assert_rejected(response.status, 415)
 
     def test_other_origins_are_refused(self):
-        status, _ = self.check("Hi", {"Origin": "https://bad.example"})
-        self.assert_rejected(status, 403)
+        for origin in (
+            "https://bad.example",
+            "null",
+            "localhost",
+            "http://localhost:9999",
+            "https://localhost:8080",
+            "ftp://localhost:8080",
+            "http://bad.example@localhost:8080",
+        ):
+            with self.subTest(origin=origin):
+                status, _ = self.check("Hi", {"Origin": origin, "Host": "localhost:8080"})
+                self.assert_rejected(status, 403)
 
     def test_other_hosts_are_refused(self):
-        status, _ = self.check("Hi", {"Host": "bad.example"})
-        self.assert_rejected(status, 403)
+        for host in (
+            "bad.example",
+            "bad.example@localhost",
+            "localhost/.bad.example",
+            "localhost:bad",
+            "localhost.bad.example",
+            "[::1]",
+            "[",
+        ):
+            with self.subTest(host=host):
+                status, _ = self.check("Hi", {"Host": host})
+                self.assert_rejected(status, 403)
         response, _ = self.request("GET", "/", headers={"Host": "bad.example"})
         self.assertEqual(response.status, 403)
+
+    def test_missing_host_is_refused(self):
+        connection = http.client.HTTPConnection("127.0.0.1", self.server.server_address[1], timeout=5)
+        self.addCleanup(connection.close)
+        connection.putrequest("GET", "/", skip_host=True)
+        connection.endheaders()
+        self.assertEqual(connection.getresponse().status, 403)
 
     def test_own_origin_is_allowed(self):
         status, _ = self.check("Hi", {"Origin": "http://localhost:8080", "Host": "localhost:8080"})

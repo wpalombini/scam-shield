@@ -15,27 +15,25 @@
 
     <form id="form">
       <label for="message">Message to check</label>
-      <textarea id="message" rows="8" maxlength="8000" required></textarea>
+      <p id="message-note" class="note">Test version. Your message goes to an AI company to be checked. We don't save it, but that company may keep a copy for a time to prevent misuse. Please remove names, account numbers and other personal details first.</p>
+      <textarea id="message" rows="8" aria-describedby="message-note" required></textarea>
       <div class="row">
         <button id="submit" type="submit">Check this message</button>
         <button id="clear" type="button" class="secondary">Clear</button>
       </div>
     </form>
 
+    <p id="status" role="status"></p>
     <p id="error" class="error" role="alert" hidden></p>
 
-    <section id="result" class="result" tabindex="-1" aria-live="polite" hidden>
-      <h2 id="result-title"></h2>
+    <section id="result" class="result" tabindex="-1" hidden>
+      <h2>Check result</h2>
       <p id="result-text"></p>
       <div id="reasons-block" hidden>
         <h3>What we noticed</h3>
         <ul id="reasons"></ul>
       </div>
     </section>
-
-    <footer>
-      <p>Test version. Your message goes to an AI provider to be checked, and we don't save it. Please remove names, account numbers and other personal details first.</p>
-    </footer>
   </main>
   <script src="/app.js"></script>
 </body>

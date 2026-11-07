@@ -2,7 +2,7 @@
 
 _Public summary, 6 Nov 2026. Review this whenever a new product surface, tool or data flow is added._
 
-**Status:** early development. A first checker exists. Fixed result wording, check-failure handling and basic injection handling are built, with only smoke-level tests (3 red-team cases). Every other defence below is planned and untested. Results will be published as the evals are built.
+**Status:** early development. A first checker exists. Fixed result wording, check-failure handling and basic injection handling are built, with only smoke-level tests (3 red-team cases). A local test page adds input size limits and a test that message text stays out of its logs. Every other defence below is planned and untested. Results will be published as the evals are built.
 
 Specific weaknesses, detection details and unfixed findings are kept private, so this page doesn't help attackers.
 
