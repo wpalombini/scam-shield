@@ -29,3 +29,21 @@ services:
       - ./evals/datasets:/evals/datasets:ro
       - ./evals/redteam:/evals/redteam:ro
       - ./evals/reports:/evals/reports
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    # Reachable only from this machine. Needs the network and the API key, and writes nothing.
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "127.0.0.1:${SCAM_SHIELD_WEB_PORT:-8080}:8080"

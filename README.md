@@ -12,6 +12,14 @@ Requires Docker and an [OpenRouter](https://openrouter.ai) API key. Copy `.env.e
 docker compose run --rm --build checker python -m scam_shield "Hi Mum, I lost my phone. Please send money to my new account today."
 ```
 
+Or use the checker page:
+
+```bash
+docker compose up --build web
+```
+
+Then open <http://localhost:8080>. It only accepts connections from the same machine. On a remote server, connect first with `ssh -L 8080:localhost:8080 <server>`.
+
 Submitted text goes to the model provider through OpenRouter. Don't use real messages containing personal details.
 
 ## Run the evals
@@ -22,6 +30,7 @@ docker compose run --rm --build evals
 
 # Run the tests (free, no network)
 docker compose run --rm --build evals python -m unittest discover -s runners
+docker compose run --rm --build --no-deps web python -m unittest test_server
 
 # Score the checker on the dataset and red-team set (uses your API key)
 docker compose run --rm --build checker python runners/run_checker_evals.py
