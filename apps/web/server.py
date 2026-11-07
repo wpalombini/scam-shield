@@ -117,7 +117,8 @@ class Handler(BaseHTTPRequestHandler):
             200,
             {"status": result.status, "text": result.text, "reasons": result.reasons},
             f"status={result.status} error={result.error or 'none'} "
-            f"latency_ms={result.latency_ms} cost_usd={result.cost_usd} patterns={result.knowledge_used}",
+            f"latency_ms={result.latency_ms} cost_usd={result.cost_usd} patterns={result.knowledge_used} "
+            f"lookup_failed={result.knowledge_failed}",
         )
 
 

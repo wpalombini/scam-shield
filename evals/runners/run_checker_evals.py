@@ -19,6 +19,7 @@ from validate_dataset import load_dataset
 
 DATASET_DIR = "datasets"
 REDTEAM_FILE = "redteam/injection.jsonl"
+POISONED_PATTERNS_FILE = "redteam/poisoned_patterns.jsonl"
 REPORT_DIR = "reports"
 WORKERS = 4
 
@@ -46,6 +47,28 @@ def _detection(pairs):
         "missed_scams": missed,
         "false_alarms": false_alarms,
     }
+
+
+class _WithExtraPattern:
+    """A knowledge base that also returns one stored pattern planted by an attacker."""
+
+    def __init__(self, knowledge, pattern):
+        self.knowledge = knowledge
+        self.pattern = pattern
+
+    def lookup(self, text):
+        return [self.pattern, *self.knowledge.lookup(text)]
+
+
+def _run_poisoned_patterns(client, knowledge, max_per_minute=None):
+    """Check that instructions hidden in a stored pattern can't change a result."""
+    cases = [json.loads(line) for line in Path(POISONED_PATTERNS_FILE).read_text(encoding="utf-8").splitlines() if line.strip()]
+    failed = []
+    for case in cases:
+        pairs = _run([case], client, max_per_minute, _WithExtraPattern(knowledge, case["pattern"]))
+        if pairs[0][1].status != case["expected"]:
+            failed.append(case["id"])
+    return {"cases": len(cases), "passed": len(cases) - len(failed), "failed": failed}
 
 
 def _percentile(values, percent):
@@ -145,10 +168,19 @@ def main(argv=None):
         return 2
 
     knowledge = None
+    patterns_available = 0
     if args.knowledge:
         knowledge = knowledge_from_env()
         if knowledge is None:
             print("SCAM_SHIELD_DATABASE_URL is not set.", file=sys.stderr)
+            return 2
+        try:
+            patterns_available = knowledge.variant_count()
+        except Exception as error:
+            print(f"Can't reach the knowledge base: {type(error).__name__}. Is the db service running?", file=sys.stderr)
+            return 2
+        if not patterns_available:
+            print("The knowledge base has no patterns. Run the ingest service first.", file=sys.stderr)
             return 2
 
     records, errors = load_dataset(DATASET_DIR)
@@ -166,7 +198,8 @@ def main(argv=None):
 
     report = build_report(pairs, redteam_pairs, client.model)
     if knowledge is not None:
-        report["knowledge"]["patterns_available"] = knowledge.variant_count()
+        report["knowledge"]["patterns_available"] = patterns_available
+        report["knowledge"]["poisoned_patterns"] = _run_poisoned_patterns(client, knowledge, args.max_per_minute)
     report["created_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     suffix = "-knowledge" if knowledge is not None else ""
     name = f"{report['created_at'].replace(':', '')}-{client.model.replace('/', '_')}{suffix}.json"
