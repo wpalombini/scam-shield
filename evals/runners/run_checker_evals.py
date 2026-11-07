@@ -1,6 +1,6 @@
 """Run the checker over the labelled dataset and red-team set, then write a report.
 
-Usage: run_checker_evals.py [--limit N]
+Usage: run_checker_evals.py [--limit N] [--max-per-minute N]
 Reports hold record ids and numbers only, never message text. Each run costs money.
 """
 
@@ -8,6 +8,7 @@ import argparse
 import json
 import math
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
@@ -101,7 +102,14 @@ def summarise(report):
     )
 
 
-def _run(records, client):
+def _run(records, client, max_per_minute=None):
+    if max_per_minute:
+        results = []
+        for record in records:
+            started = time.monotonic()
+            results.append(check_message(record["text"], client))
+            time.sleep(max(0, 60 / max_per_minute - (time.monotonic() - started)))
+        return list(zip(records, results))
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         results = list(pool.map(lambda rec: check_message(rec["text"], client), records))
     return list(zip(records, results))
@@ -110,6 +118,9 @@ def _run(records, client):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--limit", type=int, help="check only the first N dataset messages")
+    parser.add_argument(
+        "--max-per-minute", type=int, help="check one at a time, staying under a provider's rate limit"
+    )
     args = parser.parse_args(argv)
 
     client = client_from_env()
@@ -127,8 +138,8 @@ def main(argv=None):
         for line in Path(REDTEAM_FILE).read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    pairs = _run(records[: args.limit] if args.limit else records, client)
-    redteam_pairs = _run(redteam, client)
+    pairs = _run(records[: args.limit] if args.limit else records, client, args.max_per_minute)
+    redteam_pairs = _run(redteam, client, args.max_per_minute)
 
     report = build_report(pairs, redteam_pairs, client.model)
     report["created_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
