@@ -4,7 +4,7 @@ Key finding: aggregate statistics are plentiful; **labelled, current scam messag
 
 ## Knowledge base sources (checked 6 Nov 2026)
 
-Tested from the project VM with an identified user agent. Working policy, not legal advice. "New items" counts what each source published, not how long after a scam began it did so. We haven't measured that delay.
+Tested from our test environment with an identified user agent. Working policy, not legal advice. "New items" counts what each source published, not how long after a scam began it did so. We haven't measured that delay.
 
 **Start with these:**
 
@@ -31,7 +31,7 @@ Tested from the project VM with an identified user agent. Working policy, not le
 |---|---|---|
 | [URLhaus](https://abuse.ch/terms-of-use/) | Terms say commercial use may need a paid subscription. The recent-links URL we tried returned 410 | **Skip** |
 | OpenPhish | Free feed downloads, but we didn't recheck its non-commercial terms | **Skip** |
-| FTC consumer alerts | Blocks this VM with a 403 | **Skip**; not worked around |
+| FTC consumer alerts | Blocks our test environment with a 403 | **Skip**; not worked around |
 | NAB, ANZ, Telstra, Australia Post | NAB's alert page loads, but no dated alerts were found. The URLs tried for the others returned 404 | **Not assessed** |
 | Netsafe (NZ), Report Fraud (UK) | Sites load; alerts, dates and terms not checked | **Not assessed** |
 | X, phone lookup services, user submissions | Not tested. User submissions also conflict with process-and-delete until the privacy design is done | **Not assessed** |
@@ -76,9 +76,9 @@ Working policy for this project, not legal advice. **Commit** means the text may
 | [Super SMS corpus](https://github.com/smspamresearch/spstudy) | No licence in the repo; asks for citation only. The paper calls its sources "free for research" | **Local only**; ask the authors |
 | [SMISH_DT](https://github.com/MarazMia/SMISH_DT) | No licence; redistributes third-party data | **Don't use**; go to the original sources |
 | Smishtank (smishtank.com/dataset) | **Unverified:** page returned 404, so no terms seen | **Don't use** until terms are found |
-| [Scamwatch alerts](https://www.scamwatch.gov.au/about-us/using-our-website/disclaimer-and-copyright) | CC BY 3.0 AU, excluding logos, the Coat of Arms, third-party content and material marked otherwise. Asks re-publishers to check currency and accuracy with the ACCC first. Doesn't mention quoted scam messages. Read by the owner in a browser on 6 Nov 2026 | **Commit** text not labelled third-party, with `licence` set to `CC-BY-3.0-AU`, the alert's URL as `source_url`, and attribution to the ACCC as "© Commonwealth of Australia". Don't imply ACCC endorsement. Quoted scam messages are treated as covered; revisit before commercial launch |
+| [Scamwatch alerts](https://www.scamwatch.gov.au/about-us/using-our-website/disclaimer-and-copyright) | CC BY 3.0 AU, excluding logos, the Coat of Arms, third-party content and material marked otherwise. Asks re-publishers to check currency and accuracy with the ACCC first. Doesn't mention quoted scam messages. Read manually in a browser on 6 Nov 2026 | **Commit** text not labelled third-party, with `licence` set to `CC-BY-3.0-AU`, the alert's URL as `source_url`, and attribution to the ACCC as "© Commonwealth of Australia". Don't imply ACCC endorsement. Quoted scam messages are treated as covered; revisit before any public launch |
 | [cyber.gov.au](https://www.cyber.gov.au/copyright) | CC BY 4.0, excluding the Coat of Arms, the ACSC logo and third-party content. Attribute to the Australian Signals Directorate as "© Commonwealth of Australia 2026" | **Commit** with attribution, but no word-for-word messages found in the 4 alerts and advisories, or the 2 guidance pages, checked on 6 Nov 2026. Useful for scenarios |
-| [Reddit](https://redditinc.com/policies/user-agreement) | User Agreement prohibits scraping without written consent and collecting data by any means except as permitted. Users keep ownership of their posts. Blocked this VM with a 403. Secondary sources say the Data API restricts commercial and AI use | **Don't use** |
+| [Reddit](https://redditinc.com/policies/user-agreement) | User Agreement prohibits scraping without written consent and collecting data by any means except as permitted. Users keep ownership of their posts. Blocked our test environment with a 403. Secondary sources say the Data API restricts commercial and AI use | **Don't use** |
 | [Services Australia](https://www.servicesaustralia.gov.au/copyright) | CC BY 4.0, but **images are excluded**, and its scam examples are images. Page text only describes the scams | **Commit** page text only; don't transcribe example images. Useful for writing synthetic messages |
 | [ATO scam alerts](https://www.ato.gov.au/copyright) | "Free to copy, adapt, modify, transmit and distribute this material as you wish", without implying endorsement. Notice last updated 2012 | **Commit** with attribution to "© Australian Taxation Office for the Commonwealth of Australia". Don't imply endorsement |
 | [Moneysmart](https://moneysmart.gov.au/about-us/copyright) | Some material can be reproduced without permission and some can't; open licences are identified on the material itself. Teaching resources are CC BY-NC-SA 3.0 AU according to a search snippet. No open licence identified on the investor alert list page | **Don't commit** until its terms for each page are read |

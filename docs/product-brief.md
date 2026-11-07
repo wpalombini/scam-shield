@@ -33,7 +33,7 @@ Not "another scam checker" (Norton Genie, McAfee, Trend Micro ScamCheck, Bitdefe
 - Family plan: unlimited checks and family alerts.
 - B2B white-label licences (illustrative: ~A$1/member/year; a 50k-member credit union ≈ A$50k/yr). Sales cycles are 6–12 months.
 - API usage billing (Stripe metered).
-- Licensing to small institutions is the realistic path (big-bank acquisition unrealistic).
+- Licensing to small institutions is the primary B2B channel.
 
 ## Phone call evaluation approach
 - Number lookup: line type (VoIP/mobile posing as a bank), community reports, spoofing heuristics.
@@ -41,18 +41,17 @@ Not "another scam checker" (Norton Genie, McAfee, Trend Micro ScamCheck, Bitdefe
 - Voicemail upload: transcribe and analyse; deepfake detection experimental only.
 - Teach: hang up and call back on the official number; family safe word.
 
-## Architecture sketch (to refine)
+## Planned architecture
 - Agent pipeline: read screenshot → extract links/numbers/claims → parallel tool agents (RDAP domain age, URL reputation, ABN Lookup, phone line type) → verdict agent → plain-English writer (reading-level constrained) → safety reviewer.
 - Models via **OpenRouter** (5.5% credit fee): a cheap model first, escalate when uncertain. Production uses API keys, not a Claude subscription.
-- Alerts: scheduled agents over Scamwatch, bank/telco alerts, news, plus an X sweep via the xAI API `x_search` tool (check current per-result pricing).
+- Alerts: scheduled agents over Scamwatch, bank/telco alerts, news, plus an X sweep via the xAI API `x_search` tool.
 - Infra: small VM (Oracle A1 / Digital Ocean), Docker, Cloudflare (Pages, Email Workers for forward-to-check), Stripe.
 - Observability: full trace per check (OpenTelemetry/Langfuse), cost/latency/drift dashboards.
 - Rule: never say "safe". Say "No red flags found — if in doubt, call them back on the official number."
 
-## Engineering capabilities
-Multi-agent orchestration · evals (recall, false-positive rate, calibration, CI regression gates) · competitor benchmark vs Norton Genie / Scamio / Truyu · prompt-injection red-teaming · model routing and cost engineering · observability · privacy by design · accessibility for older users · multimodal input · autonomous scheduled agents · MCP server · multi-tenant SaaS.
+## Quality and publication standards
+Each release will be measured on recall, false-positive rate, calibration, cost per check and p95 latency, with CI regression gates and prompt-injection red-teaming. We will publish these results and a benchmark against Norton Genie, Scamio and Truyu. Privacy by design and accessibility for older users are release requirements.
 
-**README must include:** live link, product walkthrough, architecture diagram, eval results as numbers (recall vs competitors, $/check, p95 latency), eval history chart.
 **Docs:** product brief, architecture, ADRs, threat model, system card (honest limits).
 **Keep private:** tuned prompts and scam-pattern intelligence (config, not the public repo).
 
@@ -76,10 +75,7 @@ scam-shield/
 | 3 Reach | Months 4–6 | Expo native app; browser extension; paid API/MCP |
 | 4 Education + B2B | Month 6+ | Video explainers; white-label pilot; NZ/UK, then Brazil (Portuguese) |
 
-**Immediate next steps:**
-1. Design the labelled eval dataset (categories, sources, labelling scheme).
-2. Finalise this product brief.
-3. Run the competitor benchmark (Norton Genie, Scamio, Truyu) as the first public artifact.
+Current work is tracked in [tasks](tasks.md).
 
 ## Open questions
 - iPhone or Android: which matters most for the target audience?
