@@ -26,12 +26,12 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 
 | Task | Why it's parked | Come back |
 |---|---|---|
-| Privacy design | Owner chose to start building first | Before any public launch or stored user data |
-| ADRs: stack, model routing, data retention, eval gates | Owner chose to start building first | Once the first eval results exist |
-| 176 more labelled messages, mostly legit and non-SMS | At 24 of 200 | Add 20 per session alongside the build |
+| Privacy design | Deferred until after the first checker | Before any public launch or stored user data |
+| ADRs: stack, model routing, data retention, eval gates | Deferred until after the first checker | Once the first eval results exist |
+| 176 more labelled messages, mostly legit and non-SMS | At 24 of 200 | Add in batches alongside the build |
 | Owner review of every label | Required by the labelling guide | Before quoting results publicly |
 | Relabel 10% and record the disagreement rate | Needs more labelled messages | Around 100 messages |
-| Private config backup | Owner chose to keep it local for now | Before the knowledge base or red-team findings go in |
+| Private config backup | Kept local for now | Before the knowledge base or red-team findings go in |
 | Security contact | No launch yet | Before launch |
 | Product brief questions: iPhone or Android, brand name and domain | Not blocking the build | Before the browser-installable app ships |
 | Competitor benchmark: Norton Genie, Scamio, Truyu | Needs a useful checker and dataset first | After the first reliable eval |
@@ -49,7 +49,7 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 
 ## Decisions we may revisit
 
-- **Scamwatch quoted messages:** treated as covered by CC BY 3.0 AU. Revisit if the project grows.
+- **Scamwatch quoted messages:** treated as covered by CC BY 3.0 AU. Revisit before commercial launch.
 - **Real messages:** 14 from Scamwatch. Look for more sources, including messages people contribute, if results depend too heavily on synthetic data.
 - **Public datasets not used:** Mendeley and Super SMS have unclear terms; see `docs/data-sources.md`.
 - **User submissions as a data source:** conflicts with process-and-delete. Keep them out until the privacy design is done.

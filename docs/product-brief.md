@@ -1,11 +1,7 @@
 # Scam Shield — Product Brief
 
-_Imported 6 Nov 2026 from the claude.ai "Scam Shield" project brief._
-
 ## Goal
-A real, production-grade AI product that **showcases agentic AI engineering skills** for a GitHub portfolio and job interviews. Profit is secondary. Minimal personal data. Low running cost.
-
-**Time budget:** ~1 hour/day (~30 h/month).
+A production-grade AI product that protects older people and their families from scams, with minimal personal data and low running cost.
 
 ## Positioning
 Not "another scam checker" (Norton Genie, McAfee, Trend Micro ScamCheck, Bitdefender Scamio and CommBank's Truyu Scam Checker are all free).
@@ -53,10 +49,10 @@ Not "another scam checker" (Norton Genie, McAfee, Trend Micro ScamCheck, Bitdefe
 - Observability: full trace per check (OpenTelemetry/Langfuse), cost/latency/drift dashboards.
 - Rule: never say "safe". Say "No red flags found — if in doubt, call them back on the official number."
 
-## Portfolio / skills showcase
+## Engineering capabilities
 Multi-agent orchestration · evals (recall, false-positive rate, calibration, CI regression gates) · competitor benchmark vs Norton Genie / Scamio / Truyu · prompt-injection red-teaming · model routing and cost engineering · observability · privacy by design · accessibility for older users · multimodal input · autonomous scheduled agents · MCP server · multi-tenant SaaS.
 
-**README must include:** live link, demo GIF, architecture diagram, eval results as numbers (recall vs competitors, $/check, p95 latency), eval history chart.
+**README must include:** live link, product walkthrough, architecture diagram, eval results as numbers (recall vs competitors, $/check, p95 latency), eval history chart.
 **Docs:** product brief, architecture, ADRs, threat model, system card (honest limits).
 **Keep private:** tuned prompts and scam-pattern intelligence (config, not the public repo).
 
@@ -71,7 +67,7 @@ scam-shield/
 └── observability/
 ```
 
-## Roadmap (~1 h/day)
+## Roadmap
 | Phase | When | Deliverable |
 |---|---|---|
 | 0 Foundations | Weeks 1–2 | Product brief, ADRs, threat model, privacy design, first 200-message labelled eval set |
