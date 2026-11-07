@@ -46,6 +46,7 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 - [ ] Tracing with personal data masked
 - [ ] Browser-installable app and forward-to-email
 - [ ] Screenshot and voicemail input
+- [ ] README: live link, product walkthrough, architecture diagram, eval results and eval history chart
 
 ## Decisions we may revisit
 
@@ -57,4 +58,5 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 - **Browser access:** Scamwatch and the ATO returned 403 to Playwright earlier, but plain requests with an identified user agent worked on 6 Nov 2026. Cyber.gov.au is the reverse. Recheck access before building the alert agents.
 - **ASIC investor alert list:** local only until its terms are clear. Strong candidate for exact website and phone matching.
 - **New variant volume:** tested sources give about 2 descriptive entries a week, not the earlier estimate of 5–20. Revisit once there's a privacy design for user submissions.
+- **X sweep cost:** check current `x_search` per-result pricing before building the alert agents.
 - **Sources not assessed:** NAB, ANZ, Telstra, Australia Post, Netsafe, Report Fraud, X and phone lookup services. See `docs/data-sources.md`.
