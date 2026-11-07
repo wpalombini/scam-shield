@@ -12,7 +12,7 @@ Tested from our test environment with an identified user agent. Working policy, 
 |---|---|---|---|---|---|
 | [Scamwatch RSS](https://www.scamwatch.gov.au/rss/news-feed.xml) | Official national alerts | RSS works | 10 items from 13 Apr to 2 Nov 2026, some of them news rather than alerts | CC BY 3.0 AU, see below | **Use** |
 | [ATO scam alerts](https://www.ato.gov.au/online-services/scams-cyber-safety-and-identity-protection/scam-alerts) | Tax and myGov impersonation | Page works. It mentions RSS, but we haven't tested the feed | Oct, Sep, Jul and Feb 2026 | [Free to copy and adapt](https://www.ato.gov.au/copyright) without implying endorsement | **Use** |
-| [CommBank alerts](https://www.commbank.com.au/support/security/latest-scams-and-security-alerts.html) | Bank impersonation, and the freshest source tested | Page works, and `robots.txt` allows crawlers | Page updated 5 Nov 2026; at least 4 entries since October | Copyright notice; full terms not read | **Use after reading its terms.** Store facts, our own summary and a link, not copied text |
+| [CommBank alerts](https://www.commbank.com.au/support/security/latest-scams-and-security-alerts.html) | Bank impersonation, and the freshest source tested | Page works, and `robots.txt` allows crawlers | Page updated 5 Nov 2026; at least 4 entries since October | Copyright notice; full terms not read | **Use after reading its terms.** No clear terms page found yet, so not in the knowledge base. Store facts, our own summary and a link, not copied text |
 
 **Keep for lookups or later:**
 

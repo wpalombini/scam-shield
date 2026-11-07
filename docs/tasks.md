@@ -17,8 +17,8 @@ Do these before any more product features, in this order. The local page is a te
 1. [x] Source check: results in `docs/data-sources.md`. Start with Scamwatch, the ATO and CommBank, once CommBank's terms are read
 2. [x] Grow the eval set to 100 messages, split evenly between scam and legit. Latest report for the default model: `evals/reports/2026-11-07T023243Z-anthropic_claude-haiku-5.5.json`
 3. [x] Local checker page, to try the checker by hand: `docker compose up --build web`
-4. [ ] Knowledge base in Postgres on local Docker, kept out of the public repo, with scam types, variants, sources and dates from 2–3 independent sources
-5. [ ] Run the evals with and without the knowledge base, and only build on it if results improve
+4. [x] Knowledge base in Postgres on local Docker, with data kept out of the public repo: 18 patterns from Scamwatch and the ATO
+5. [x] Run the evals with and without the knowledge base. Results are promising but not settled; see "Knowledge base" under decisions. It stays off by default
 
 Keep eval messages out of the knowledge base, ideally using newer alerts, or scores will be inflated.
 
@@ -39,6 +39,11 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 | Repeat the Sol comparison on a larger set with real legit messages | The current set can't settle it | Before changing the default model |
 | Check production account rate limits | Evals hit 20 requests a minute | Before launch |
 | Automated browser tests for the checker page | Tested by hand in a browser so far | Before the page is used beyond local testing |
+| Sender context: optional sender and channel fields on the page, plus about 20 eval pairs with the same text from plausible and suspicious senders. A sender can be faked, so it can add suspicion but never clear a message | Found in hands-on testing | During tuning, once the system runs end to end |
+| Add CommBank alerts to the knowledge base | No clear terms found yet. Read them first, then store facts, our own summary and a link | Before relying on the knowledge base |
+| Merge duplicate patterns across sources and record which sources confirm each one | 18 patterns so far, so not needed yet | When sources overlap |
+| Find relevant patterns by meaning, such as embeddings | Keyword matching couldn't separate related patterns. Sending all patterns works while the set is small | Before the set passes 50 patterns |
+| Test whether patterns make new scam types easier to miss | One scam was missed with patterns and none without | Before turning the knowledge base on by default |
 | Competitor benchmark: Norton Genie, Scamio, Truyu | Needs a useful checker and dataset first | After the first reliable eval |
 
 ## After the data foundation: rest of Phase 1
@@ -62,6 +67,7 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 - **Eval repeatability:** Haiku 5.5 doesn't list `temperature` as supported, so runs aren't pinned to a fixed setting. Runs of the same code on 7 Nov 2026 gave false-positive rates of 0.08 and 0.12. Pin a provider and repeat runs before comparing small differences.
 - **Default model:** Haiku 5.5 stays the default. On 7 Nov 2026, two runs each: GPT-6.1 Sol had fewer false alarms (1–2 of 50 against 5 of 50, with Haiku at 4–6 across all its complete runs that day) but cost about 9 times as much per check and had slower p95 latency (about 5.1 s against 3.1 s). Providers weren't pinned and concurrency differed, so cost and latency aren't a controlled comparison. Sol also missed one real message (`sw-006`) that Haiku caught, though one message can't separate their recall. This evidence doesn't justify switching, and it doesn't show Haiku is better.
 - **OpenRouter rate limit:** new accounts were limited to 20 requests a minute on GPT-6.1 Sol. Use `--max-per-minute` for evals.
+- **Knowledge base:** off by default. On 7 Nov 2026, two runs each of Haiku 5.5 on 100 messages. Baseline: 50 of 50 scams caught, 5–6 of 50 false alarms, $0.00014 per check. New prompt line without patterns: 50 of 50, 3–4 false alarms, $0.00013. All 18 patterns: 49 of 50, 0 false alarms, $0.00069. The one miss, `syn-028`, is ambiguous by design. The legit messages are all synthetic, and the patterns and eval set share one topic (myGov impersonation), so this isn't settled. Promote the prompt line separately if it holds up.
 - **Synthetic data:** 86 of the 100 messages are synthetic, written by an AI model, and all 50 legit messages are synthetic. Real-world false alarms are unmeasured until there are real legit messages. Recall is also likely overstated: only 14 scams are real, and defanged links and placeholders appear only in those real scams.
 - **Browser access:** Scamwatch and the ATO returned 403 to Playwright earlier, but plain requests with an identified user agent worked on 6 Nov 2026. Cyber.gov.au is the reverse. Recheck access before building the alert agents.
 - **ASIC investor alert list:** local only until its terms are clear. Strong candidate for exact website and phone matching.

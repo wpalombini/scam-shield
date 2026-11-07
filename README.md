@@ -38,6 +38,21 @@ docker compose run --rm --build checker python runners/run_checker_evals.py
 
 Scored runs save a report to `evals/reports`, with record ids and numbers but no message text.
 
+## Knowledge base
+
+The checker can use scam patterns extracted from official alerts. It's off by default, and the data stays in a private database rather than this repo. Set `POSTGRES_PASSWORD` and `SCAM_SHIELD_DATABASE_URL` in `.env`, then:
+
+```bash
+# Fetch alerts and extract patterns (uses your API key)
+docker compose run --rm --build ingest
+
+# Score the checker with the patterns (uses your API key)
+docker compose --profile knowledge up -d db
+docker compose run --rm --build checker python runners/run_checker_evals.py --knowledge
+```
+
+To use the patterns on the checker page, also set `SCAM_SHIELD_KNOWLEDGE=on`, and run `docker compose --profile knowledge up -d --build db web`. Alerts used by the eval set are held out, so the checker isn't scored on its own source material.
+
 ## Licence
 
 This project is under the [MIT License](LICENSE), except for third-party records in `evals/datasets`. Those keep the licence named in each record's `licence` field; see `evals/datasets/ATTRIBUTION.md`.

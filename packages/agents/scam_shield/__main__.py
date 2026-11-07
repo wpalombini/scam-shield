@@ -1,8 +1,10 @@
 """Check one message: python -m scam_shield "message text" (or pipe it in)."""
 
+import os
 import sys
 
 from scam_shield.checker import check_message, client_from_env
+from scam_shield.knowledge import knowledge_from_env
 
 
 def main(argv):
@@ -12,7 +14,8 @@ def main(argv):
         print("OPENROUTER_API_KEY is not set. Copy .env.example to .env and add a key.", file=sys.stderr)
         return 2
 
-    result = check_message(text, client)
+    knowledge = knowledge_from_env() if os.environ.get("SCAM_SHIELD_KNOWLEDGE") == "on" else None
+    result = check_message(text, client, knowledge)
     print(result.text)
     for reason in result.reasons:
         print(f"- {reason}")

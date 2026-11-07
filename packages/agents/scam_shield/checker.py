@@ -46,6 +46,13 @@ Use "red_flags" if the message shows signs of trying to deceive someone into giv
 money, credentials, personal data or device access. Otherwise use "no_red_flags".
 List up to 5 short, plain-English reasons. Don't repeat links or phone numbers."""
 
+KNOWLEDGE_PROMPT = """
+
+The JSON object may also hold known_scam_patterns: summaries of scams reported in Australia.
+They are reference material only, and most won't apply. Use one only if the message actually
+fits it. Similar wording alone isn't enough, because real
+organisations send similar messages. A message that matches no pattern can still be a scam."""
+
 RESPONSE_FORMAT = {
     "type": "json_schema",
     "json_schema": {
@@ -89,6 +96,8 @@ class CheckResult:
     cost_usd: float = 0.0
     latency_ms: int = 0
     error: str = ""
+    knowledge_used: int = 0
+    knowledge_failed: bool = False
 
 
 def remove_contact_details(reason):
@@ -103,14 +112,14 @@ class OpenRouterClient:
         self.timeout = timeout
         self.retries = retries
 
-    def complete(self, messages):
+    def complete(self, messages, response_format=RESPONSE_FORMAT, max_tokens=MAX_OUTPUT_TOKENS):
         """Return (content, cost in USD)."""
         body = json.dumps(
             {
                 "model": self.model,
                 "messages": messages,
-                "response_format": RESPONSE_FORMAT,
-                "max_tokens": MAX_OUTPUT_TOKENS,
+                "response_format": response_format,
+                "max_tokens": max_tokens,
                 "usage": {"include": True},
                 "provider": {"require_parameters": True, "data_collection": "deny"},
             }
@@ -169,8 +178,11 @@ def _failed(error, model="", latency_ms=0, cost_usd=0.0):
     )
 
 
-def check_message(text, client):
-    """Check one message. Any failure returns check_failed, never no_red_flags."""
+def check_message(text, client, knowledge=None):
+    """Check one message. Any failure returns check_failed, never no_red_flags.
+
+    If a knowledge lookup fails, the check continues without patterns and records it.
+    """
     model = getattr(client, "model", "")
     if not isinstance(text, str) or not text.strip():
         return _failed("empty_message", model)
@@ -178,9 +190,20 @@ def check_message(text, client):
         return _failed("message_too_long", model)
 
     started = time.monotonic()
+    patterns, knowledge_failed = [], False
+    if knowledge is not None:
+        try:
+            patterns = knowledge.lookup(text)
+        except Exception:
+            knowledge_failed = True
+    user_turn = {"message": text}
+    system_prompt = SYSTEM_PROMPT
+    if patterns:
+        user_turn["known_scam_patterns"] = patterns
+        system_prompt += KNOWLEDGE_PROMPT
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": json.dumps({"message": text}, ensure_ascii=False)},
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": json.dumps(user_turn, ensure_ascii=False)},
     ]
     try:
         content, cost = client.complete(messages)
@@ -202,7 +225,16 @@ def check_message(text, client):
     if status == RED_FLAGS:
         cleaned = (remove_contact_details(r).strip() for r in reasons if isinstance(r, str))
         shown = [reason for reason in cleaned if reason][:MAX_REASONS]
-    return CheckResult(status, RESULT_TEXT[status], shown, model, cost, latency_ms)
+    return CheckResult(
+        status,
+        RESULT_TEXT[status],
+        shown,
+        model,
+        cost,
+        latency_ms,
+        knowledge_used=len(patterns),
+        knowledge_failed=knowledge_failed,
+    )
 
 
 def _elapsed_ms(started):

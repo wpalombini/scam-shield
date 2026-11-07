@@ -2,4 +2,5 @@
 !apps/web/
 !evals/runners/
 !packages/agents/scam_shield/
+!packages/agents/requirements.txt
 **/__pycache__/
