@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scam Shield</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Is this a scam?</h1>
+      <p>Paste a text, email or description of a phone call. We'll look for signs of a scam.</p>
+    </header>
+
+    <form id="form">
+      <label for="message">Message to check</label>
+      <textarea id="message" rows="8" maxlength="8000" required></textarea>
+      <div class="row">
+        <button id="submit" type="submit">Check this message</button>
+        <button id="clear" type="button" class="secondary">Clear</button>
+      </div>
+    </form>
+
+    <p id="error" class="error" role="alert" hidden></p>
+
+    <section id="result" class="result" tabindex="-1" aria-live="polite" hidden>
+      <h2 id="result-title"></h2>
+      <p id="result-text"></p>
+      <div id="reasons-block" hidden>
+        <h3>What we noticed</h3>
+        <ul id="reasons"></ul>
+      </div>
+    </section>
+
+    <footer>
+      <p>Test version. Your message goes to an AI provider to be checked, and we don't save it. Please remove names, account numbers and other personal details first.</p>
+    </footer>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
