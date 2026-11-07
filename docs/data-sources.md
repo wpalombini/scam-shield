@@ -44,8 +44,8 @@ Desk research from public docs, not tested with real lookups. Prices are USD. No
 
 | Service | Gives | Cost | Decision |
 |---|---|---|---|
-| [libphonenumber](https://github.com/google/libphonenumber) | Number type, locally. Doesn't track current carriers | Free | **Use first** |
-| [Google Web Risk](https://cloud.google.com/web-risk/pricing) | Known-bad URLs | 100,000 free a month (Lookup API) | **Use first**, for links in messages |
+| [libphonenumber](https://github.com/google/libphonenumber) | Number type, locally. Doesn't track current carriers | Free | **Tried and dropped**: didn't improve eval results. See the tracker |
+| [Google Web Risk](https://cloud.google.com/web-risk/pricing) | Known-bad URLs | 100,000 free a month (Lookup API) | **Next to try**, for links in messages |
 | [RDAP](https://about.rdap.org/) | Domain age for many TLDs. [.au creation dates are hidden and automated queries prohibited](https://www.auda.org.au/whois-policy) | Free | **Use later**, for non-.au domains |
 | [IPQualityScore](https://www.ipqualityscore.com/plans) | Phone and email fraud scores | Free 1,000 a month. Paid about $99 for 5,000, from a third-party source | **Trial only.** [Terms](https://www.ipqualityscore.com/terms-of-service) bar republishing responses to third parties and let IPQS use submitted data to improve its risk models, and [retention is about a year](https://www.ipqualityscore.com/privacy-policy) |
 | [Twilio Lookup](https://www.twilio.com/en-us/user-authentication-identity/pricing/lookup) | Line type and carrier, no reputation | $0.008 per request | **Fallback** |
