@@ -91,7 +91,7 @@ Working policy for this project, not legal advice. **Commit** means the text may
 
 | Source | What the source states | Decision |
 |---|---|---|
-| [UCI SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) | CC BY 4.0, "for any purpose" with credit. Corpus was "collected from free or free for research sources" | **Commit** with attribution (DOI 10.24432/C5CC84). Not AU, and spam isn't necessarily scam |
+| [UCI SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) | CC BY 4.0, "for any purpose" with credit. Corpus was "collected from free or free for research sources" | **Committed** 100 screened ham messages with attribution (DOI 10.24432/C5CC84). Not AU, and spam isn't necessarily scam |
 | [Mendeley SMS Phishing](https://data.mendeley.com/datasets/f45bkkt8pr/1) | Licence field says CC BY 4.0, but the site footer reserves rights including AI training. Messages were converted from images found online | **Local only** until the conflict is resolved |
 | [Super SMS corpus](https://github.com/smspamresearch/spstudy) | No licence in the repo; asks for citation only. The paper calls its sources "free for research" | **Local only**; ask the authors |
 | [SMISH_DT](https://github.com/MarazMia/SMISH_DT) | No licence; redistributes third-party data | **Don't use**; go to the original sources |

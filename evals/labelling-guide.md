@@ -95,7 +95,7 @@ These are starting targets, to be adjusted as the set grows.
 - **Channels:** 90 `sms`, 50 `call_description`, 40 `email`, 10 `voicemail_transcript` and 10 `social`.
 - **Balance:** keep scam and legit roughly even within each channel, so the channel doesn't give away the label.
 - **Language:** English only for this first set, because the first region is AU.
-- **Real vs synthetic:** 14 real messages from Scamwatch, and the rest synthetic. Report metrics for real and synthetic separately, because synthetic messages can overstate performance.
+- **Real vs synthetic:** 14 real scams from Scamwatch, 100 real casual texts from the UCI SMS Spam Collection, and the rest synthetic. Report metrics for real and synthetic separately, because synthetic messages can overstate performance.
 
 ## Quality checks
 
