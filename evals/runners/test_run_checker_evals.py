@@ -1,8 +1,9 @@
+import argparse
 import json
 import unittest
 from unittest import mock
 
-from run_checker_evals import _run, build_report, summarise
+from run_checker_evals import _positive_int, _run, build_report, summarise
 from scam_shield.checker import CHECK_FAILED, NO_RED_FLAGS, RED_FLAGS, CheckResult
 
 
@@ -26,12 +27,17 @@ class PacingTests(unittest.TestCase):
         records = [record("s1", "scam"), record("s2", "scam")]
         with (
             mock.patch("run_checker_evals.check_message", return_value=result(RED_FLAGS)),
-            mock.patch("run_checker_evals.time.monotonic", return_value=0),
+            mock.patch("run_checker_evals.time.monotonic", side_effect=[0, 1, 10, 15]),
             mock.patch("run_checker_evals.time.sleep") as sleep,
         ):
             pairs = _run(records, client=None, max_per_minute=20)
         self.assertEqual(len(pairs), 2)
-        self.assertEqual(sleep.call_args_list, [mock.call(3.0), mock.call(3.0)])
+        self.assertEqual(sleep.call_args_list, [mock.call(2.0), mock.call(0)])
+
+    def test_max_per_minute_must_be_positive(self):
+        for value in ("0", "-1"):
+            with self.subTest(value=value), self.assertRaises(argparse.ArgumentTypeError):
+                _positive_int(value)
 
 
 class BuildReportTests(unittest.TestCase):
