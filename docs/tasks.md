@@ -8,14 +8,14 @@ Update this file in the same PR as the work it describes.
 - [x] Command-line check for a single message
 - [x] Eval runner with a small prompt-injection set
 - [x] First live eval: `evals/reports/2026-11-06T214353Z-anthropic_claude-haiku-5.5.json`. Smoke test only: 24 messages, 5 of them legit
-- [ ] Merge the first checker with its eval results
+- [x] Merge the first checker with its eval results
 
 ## Next: data foundation
 
 Do these before any more features, in this order:
 
 1. [x] Source check: results in `docs/data-sources.md`. Start with Scamwatch, the ATO and CommBank, once CommBank's terms are read
-2. [x] Grow the eval set to 100 messages, split evenly between scam and legit. Latest report: `evals/reports/2026-11-07T010852Z-anthropic_claude-haiku-5.5.json`
+2. [x] Grow the eval set to 100 messages, split evenly between scam and legit. Latest report: `evals/reports/2026-11-07T011406Z-anthropic_claude-haiku-5.5.json`
 3. [ ] Private config backup, because the knowledge base is scam-pattern intelligence
 4. [ ] Knowledge base in Postgres on local Docker, kept out of the public repo, with scam types, variants, sources and dates from 2–3 independent sources
 5. [ ] Run the evals with and without the knowledge base, and only build on it if results improve
@@ -27,13 +27,16 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 | Task | Reason deferred | Revisit |
 |---|---|---|
 | Privacy design | Deferred until after the first checker | Before any public launch or stored user data |
-| ADRs: stack, model routing, data retention, eval gates | Deferred until after the first checker | Once the first eval results exist |
+| ADRs: stack, model routing, data retention, eval gates | Deferred until after the first checker | Before the knowledge base is built |
 | 100 more labelled messages | At 100 of 200 | Add in batches alongside the build |
-| Owner review of every label | Required by the labelling guide | Before quoting results publicly |
-| Relabel 10% and record the disagreement rate | Needs more labelled messages | Around 100 messages |
+| Owner review of every label | Required by the labelling guide | Before quoting results as a performance claim |
+| Relabel 10% and record the disagreement rate | Set reached 100 messages; not yet done | After the owner label review |
 | Private config backup | Backup not yet set up | Before the knowledge base or red-team findings go in |
 | Security contact | No launch yet | Before launch |
 | Product brief questions: iPhone or Android, brand name and domain | Not blocking the build | Before the browser-installable app ships |
+| Review recurring false alarms: syn-040, syn-045, syn-048, syn-065, syn-066 and syn-076 | Found in the 100-message evals. syn-048 is ambiguous by design | Before the knowledge base comparison |
+| Pin a provider and report repeated eval runs | Identical runs varied | Before the knowledge base comparison |
+| Source real legit messages, with consent or clear licences | All 50 are synthetic, so real-world false alarms are unmeasured | Before quoting results as a performance claim |
 | Competitor benchmark: Norton Genie, Scamio, Truyu | Needs a useful checker and dataset first | After the first reliable eval |
 
 ## After the data foundation: rest of Phase 1
@@ -54,8 +57,8 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 - **Real messages:** 14 from Scamwatch. Look for more sources, including messages people contribute, if results depend too heavily on synthetic data.
 - **Public datasets not used:** Mendeley and Super SMS have unclear terms; see `docs/data-sources.md`.
 - **User submissions as a data source:** conflicts with process-and-delete. Keep them out until the privacy design is done.
-- **Eval repeatability:** Haiku 5.5 doesn't list `temperature` as supported, so runs aren't pinned to a fixed setting. Two identical runs on 7 Nov 2026 gave false-positive rates of 0.08 and 0.12. Pin a provider and repeat runs before comparing small differences.
-- **Synthetic data:** 86 of the 100 messages are synthetic, written by an AI model, and all 50 legit messages are synthetic. Real-world false alarms are unmeasured until there are real legit messages.
+- **Eval repeatability:** Haiku 5.5 doesn't list `temperature` as supported, so runs aren't pinned to a fixed setting. Runs of the same code on 7 Nov 2026 gave false-positive rates of 0.08 and 0.12. Pin a provider and repeat runs before comparing small differences.
+- **Synthetic data:** 86 of the 100 messages are synthetic, written by an AI model, and all 50 legit messages are synthetic. Real-world false alarms are unmeasured until there are real legit messages. Recall is also likely overstated: only 14 scams are real, and defanged links and placeholders appear only in those real scams.
 - **Browser access:** Scamwatch and the ATO returned 403 to Playwright earlier, but plain requests with an identified user agent worked on 6 Nov 2026. Cyber.gov.au is the reverse. Recheck access before building the alert agents.
 - **ASIC investor alert list:** local only until its terms are clear. Strong candidate for exact website and phone matching.
 - **New variant volume:** tested sources give about 2 descriptive entries a week, not the earlier estimate of 5–20. Revisit once there's a privacy design for user submissions.

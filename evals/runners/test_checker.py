@@ -1,14 +1,18 @@
+import io
 import json
 import unittest
+from unittest import mock
 
 from scam_shield.checker import (
     CHECK_FAILED,
     MAX_MESSAGE_CHARS,
+    MAX_OUTPUT_TOKENS,
     NO_RED_FLAGS,
     RED_FLAGS,
     RESULT_TEXT,
     SYSTEM_PROMPT,
     ModelError,
+    OpenRouterClient,
     check_message,
     remove_contact_details,
 )
@@ -88,7 +92,8 @@ class FailureTests(unittest.TestCase):
         self.assert_failed(check_message("Hello", FakeClient(error=ModelError("network"))), "network")
 
     def test_invalid_outputs_fail(self):
-        for content in ("not json", "[]", output("safe"), '{"status":"red_flags"}', "null"):
+        cases = ("not json", "[]", output("safe"), '{"status":"red_flags"}', "null", '{"status":"red_fl', None)
+        for content in cases:
             with self.subTest(content=content):
                 self.assert_failed(check_message("Hello", FakeClient(content)), "invalid_output")
 
@@ -101,6 +106,40 @@ class FailureTests(unittest.TestCase):
         self.assert_failed(check_message("   ", client), "empty_message")
         self.assert_failed(check_message("x" * (MAX_MESSAGE_CHARS + 1), client), "message_too_long")
         self.assertIsNone(client.messages)
+
+
+    def test_failed_checks_keep_the_cost_of_the_call(self):
+        self.assertEqual(check_message("Hello", FakeClient("not json")).cost_usd, 0.001)
+        error = ModelError("output_truncated", 0.002)
+        result = check_message("Hello", FakeClient(error=error))
+        self.assert_failed(result, "output_truncated")
+        self.assertEqual(result.cost_usd, 0.002)
+
+
+class OpenRouterClientTests(unittest.TestCase):
+    def complete(self, finish_reason):
+        payload = {
+            "choices": [{"finish_reason": finish_reason, "message": {"content": "{}"}}],
+            "usage": {"cost": 0.002},
+        }
+        with mock.patch(
+            "scam_shield.checker.urllib.request.urlopen",
+            return_value=io.BytesIO(json.dumps(payload).encode()),
+        ) as urlopen:
+            try:
+                return OpenRouterClient("key").complete([])
+            finally:
+                self.request = urlopen.call_args[0][0]
+
+    def test_uses_the_output_token_limit(self):
+        self.assertEqual(self.complete("stop"), ("{}", 0.002))
+        self.assertEqual(json.loads(self.request.data)["max_tokens"], MAX_OUTPUT_TOKENS)
+
+    def test_truncated_output_raises_and_keeps_the_cost(self):
+        with self.assertRaises(ModelError) as caught:
+            self.complete("length")
+        self.assertEqual(str(caught.exception), "output_truncated")
+        self.assertEqual(caught.exception.cost_usd, 0.002)
 
 
 class InjectionFramingTests(unittest.TestCase):
