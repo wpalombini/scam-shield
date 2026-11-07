@@ -11,7 +11,7 @@ const error = document.getElementById("error");
 const result = document.getElementById("result");
 const reasonsBlock = document.getElementById("reasons-block");
 const reasons = document.getElementById("reasons");
-let checking = false;
+let currentCheck = null;
 
 function showError(text) {
   error.textContent = text;
@@ -41,10 +41,28 @@ function showResult(data) {
   result.focus();
 }
 
+function resetButton() {
+  status.textContent = "";
+  submit.removeAttribute("aria-disabled");
+  submit.textContent = BUTTON_TEXT;
+}
+
+// A result must only ever appear beside the message it was checked for, so any
+// change to the message cancels a check in progress and clears the last result.
+function discardCheck() {
+  if (currentCheck) {
+    currentCheck.abort();
+    currentCheck = null;
+    resetButton();
+  }
+  clearOutput();
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (checking) return;
-  checking = true;
+  if (currentCheck) return;
+  const check = new AbortController();
+  currentCheck = check;
   clearOutput();
   submit.setAttribute("aria-disabled", "true");
   submit.textContent = "Checking…";
@@ -54,25 +72,30 @@ form.addEventListener("submit", async (event) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: message.value }),
+      signal: check.signal,
     });
     const data = await response.json();
+    if (check !== currentCheck) return;
     if (response.ok && STATUSES.has(data.status)) {
       showResult(data);
     } else {
       showError(data.error || "We couldn't check this message. Please try again. Until then, don't click links or call numbers in the message.");
     }
   } catch {
+    if (check !== currentCheck) return;
     showError("We couldn't reach the checker. Please try again. Until then, don't click links or call numbers in the message.");
   } finally {
-    checking = false;
-    status.textContent = "";
-    submit.removeAttribute("aria-disabled");
-    submit.textContent = BUTTON_TEXT;
+    if (check === currentCheck) {
+      currentCheck = null;
+      resetButton();
+    }
   }
 });
 
+message.addEventListener("input", discardCheck);
+
 document.getElementById("clear").addEventListener("click", () => {
   message.value = "";
-  clearOutput();
+  discardCheck();
   message.focus();
 });

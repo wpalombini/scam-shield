@@ -93,7 +93,7 @@ class FailureTests(unittest.TestCase):
         self.assert_failed(check_message("Hello", FakeClient(error=ModelError("network"))), "network")
 
     def test_invalid_outputs_fail(self):
-        cases = ("not json", "[]", output("safe"), '{"status":"red_flags"}', "null", '{"status":"red_fl', None)
+        cases = ("not json", "[]", output("safe"), '{"status":"red_flags"}', "null", '{"status":"red_fl', None, "[" * 100000, "1" * 5000)
         for content in cases:
             with self.subTest(content=content):
                 self.assert_failed(check_message("Hello", FakeClient(content)), "invalid_output")
@@ -130,7 +130,8 @@ class OpenRouterClientTests(unittest.TestCase):
             self.assertEqual(str(caught.exception), "network")
 
     def test_unreadable_responses_raise_invalid_response(self):
-        for body in (b"\xff", b"not json", b'{"choices": []}', b"[]"):
+        huge_cost = b'{"choices": [{"message": {"content": "{}"}}], "usage": {"cost": 1' + b"0" * 400 + b"}}"
+        for body in (b"\xff", b"not json", b'{"choices": []}', b"[]", b"[" * 100000, huge_cost):
             with (
                 self.subTest(body=body),
                 mock.patch("scam_shield.checker.urllib.request.urlopen", return_value=io.BytesIO(body)),

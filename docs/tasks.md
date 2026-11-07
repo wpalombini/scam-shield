@@ -15,7 +15,7 @@ Update this file in the same PR as the work it describes.
 Do these before any more product features, in this order. The local page is a testing aid:
 
 1. [x] Source check: results in `docs/data-sources.md`. Start with Scamwatch, the ATO and CommBank, once CommBank's terms are read
-2. [x] Grow the eval set to 100 messages, split evenly between scam and legit. Latest report for the default model: `evals/reports/2026-11-07T022641Z-anthropic_claude-haiku-5.5.json`
+2. [x] Grow the eval set to 100 messages, split evenly between scam and legit. Latest report for the default model: `evals/reports/2026-11-07T023243Z-anthropic_claude-haiku-5.5.json`
 3. [x] Local checker page, to try the checker by hand: `docker compose up --build web`
 4. [ ] Knowledge base in Postgres on local Docker, kept out of the public repo, with scam types, variants, sources and dates from 2–3 independent sources
 5. [ ] Run the evals with and without the knowledge base, and only build on it if results improve
@@ -38,6 +38,7 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 | Source real legit messages, with consent or clear licences | All 50 are synthetic, so real-world false alarms are unmeasured | Before quoting results as a performance claim |
 | Repeat the Sol comparison on a larger set with real legit messages | The current set can't settle it | Before changing the default model |
 | Check production account rate limits | Evals hit 20 requests a minute | Before launch |
+| Automated browser tests for the checker page | Tested by hand in a browser so far | Before the page is used beyond local testing |
 | Competitor benchmark: Norton Genie, Scamio, Truyu | Needs a useful checker and dataset first | After the first reliable eval |
 
 ## After the data foundation: rest of Phase 1

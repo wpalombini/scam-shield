@@ -135,7 +135,7 @@ class OpenRouterClient:
             except (OSError, http.client.HTTPException):
                 if attempt == self.retries:
                     raise ModelError("network") from None
-            except ValueError:
+            except (ValueError, RecursionError):
                 raise ModelError("invalid_response") from None
             time.sleep(2**attempt)
 
@@ -143,7 +143,7 @@ class OpenRouterClient:
             choice = payload["choices"][0]
             content = choice["message"]["content"]
             cost = float((payload.get("usage") or {}).get("cost") or 0)
-        except (KeyError, IndexError, TypeError, ValueError, AttributeError):
+        except (KeyError, IndexError, TypeError, ValueError, AttributeError, OverflowError):
             raise ModelError("invalid_response") from None
         if choice.get("finish_reason") == "length":
             raise ModelError("output_truncated", cost)
@@ -192,7 +192,7 @@ def check_message(text, client):
         output = json.loads(content)
         status = output["status"]
         reasons = output["reasons"]
-    except (json.JSONDecodeError, KeyError, TypeError):
+    except (ValueError, KeyError, TypeError, RecursionError):
         return _failed("invalid_output", model, latency_ms, cost)
     if status not in (RED_FLAGS, NO_RED_FLAGS) or not isinstance(reasons, list):
         return _failed("invalid_output", model, latency_ms, cost)
