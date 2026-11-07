@@ -51,7 +51,7 @@ docker compose --profile knowledge up -d db
 docker compose run --rm --build checker python runners/run_checker_evals.py --knowledge
 ```
 
-To use the patterns on the checker page, also set `SCAM_SHIELD_KNOWLEDGE=on`, and run `docker compose --profile knowledge up -d --build db web`. Alerts used by the eval set are held out, so the checker isn't scored on its own source material.
+To use the patterns on the checker page, also set `SCAM_SHIELD_KNOWLEDGE=on`, and run `docker compose --profile knowledge up -d --build db web`. Alerts used by the eval set are held out, but other alerts can cover the same scams, so some overlap with the eval set remains.
 
 ## Licence
 
