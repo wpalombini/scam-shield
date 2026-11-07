@@ -1,0 +1,258 @@
+{
+  "model": "anthropic/claude-haiku-5.5",
+  "overall": {
+    "messages": 100,
+    "scams": 50,
+    "legit": 50,
+    "failed_checks": 0,
+    "failed_ids": [],
+    "recall": 0.98,
+    "false_positive_rate": 0.0,
+    "missed_scams": [
+      "syn-028"
+    ],
+    "false_alarms": []
+  },
+  "real": {
+    "messages": 14,
+    "scams": 14,
+    "legit": 0,
+    "failed_checks": 0,
+    "failed_ids": [],
+    "recall": 1.0,
+    "false_positive_rate": null,
+    "missed_scams": [],
+    "false_alarms": []
+  },
+  "synthetic": {
+    "messages": 86,
+    "scams": 36,
+    "legit": 50,
+    "failed_checks": 0,
+    "failed_ids": [],
+    "recall": 0.972,
+    "false_positive_rate": 0.0,
+    "missed_scams": [
+      "syn-028"
+    ],
+    "false_alarms": []
+  },
+  "hard_negatives": {
+    "messages": 31,
+    "scams": 0,
+    "legit": 31,
+    "failed_checks": 0,
+    "failed_ids": [],
+    "recall": null,
+    "false_positive_rate": 0.0,
+    "missed_scams": [],
+    "false_alarms": []
+  },
+  "by_category": {
+    "appointment": {
+      "messages": 8,
+      "scams": 0,
+      "legit": 8,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": null,
+      "false_positive_rate": 0.0,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "bank_impersonation": {
+      "messages": 7,
+      "scams": 7,
+      "legit": 0,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": 1.0,
+      "false_positive_rate": null,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "bank_notice": {
+      "messages": 12,
+      "scams": 0,
+      "legit": 12,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": null,
+      "false_positive_rate": 0.0,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "delivery_notice": {
+      "messages": 8,
+      "scams": 0,
+      "legit": 8,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": null,
+      "false_positive_rate": 0.0,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "delivery_toll": {
+      "messages": 7,
+      "scams": 7,
+      "legit": 0,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": 1.0,
+      "false_positive_rate": null,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "fake_notification": {
+      "messages": 4,
+      "scams": 4,
+      "legit": 0,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": 1.0,
+      "false_positive_rate": null,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "family": {
+      "messages": 8,
+      "scams": 0,
+      "legit": 8,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": null,
+      "false_positive_rate": 0.0,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "government_impersonation": {
+      "messages": 7,
+      "scams": 7,
+      "legit": 0,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": 1.0,
+      "false_positive_rate": null,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "government_notice": {
+      "messages": 8,
+      "scams": 0,
+      "legit": 8,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": null,
+      "false_positive_rate": 0.0,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "hi_mum": {
+      "messages": 7,
+      "scams": 7,
+      "legit": 0,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": 0.857,
+      "false_positive_rate": null,
+      "missed_scams": [
+        "syn-028"
+      ],
+      "false_alarms": []
+    },
+    "investment": {
+      "messages": 4,
+      "scams": 4,
+      "legit": 0,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": 1.0,
+      "false_positive_rate": null,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "job": {
+      "messages": 3,
+      "scams": 3,
+      "legit": 0,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": 1.0,
+      "false_positive_rate": null,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "marketing": {
+      "messages": 5,
+      "scams": 0,
+      "legit": 5,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": null,
+      "false_positive_rate": 0.0,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "other_legit": {
+      "messages": 1,
+      "scams": 0,
+      "legit": 1,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": null,
+      "false_positive_rate": 0.0,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "other_scam": {
+      "messages": 3,
+      "scams": 3,
+      "legit": 0,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": 1.0,
+      "false_positive_rate": null,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "remote_access": {
+      "messages": 5,
+      "scams": 5,
+      "legit": 0,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": 1.0,
+      "false_positive_rate": null,
+      "missed_scams": [],
+      "false_alarms": []
+    },
+    "romance": {
+      "messages": 3,
+      "scams": 3,
+      "legit": 0,
+      "failed_checks": 0,
+      "failed_ids": [],
+      "recall": 1.0,
+      "false_positive_rate": null,
+      "missed_scams": [],
+      "false_alarms": []
+    }
+  },
+  "red_team": {
+    "cases": 3,
+    "passed": 3,
+    "failed": []
+  },
+  "errors": [],
+  "cost_usd_total": 0.070924,
+  "cost_usd_per_check": 0.000689,
+  "latency_ms_p95": 3715,
+  "knowledge": {
+    "checks_with_patterns": 103,
+    "patterns_used": 1854,
+    "failed_lookups": 0,
+    "patterns_available": 18
+  },
+  "created_at": "2026-11-07T02:56:37Z"
+}

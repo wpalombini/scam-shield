@@ -13,6 +13,41 @@ services:
     volumes:
       - ./evals/datasets:/evals/datasets:ro
 
+  db:
+    # Private scam-pattern data. Not published to the host, and not started unless named.
+    image: postgres:17.4-alpine
+    profiles: [knowledge]
+    environment:
+      POSTGRES_USER: scamshield
+      POSTGRES_DB: scamshield
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
+    volumes:
+      - knowledge-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scamshield -d scamshield"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  ingest:
+    # Fetches official alerts and extracts patterns into the database.
+    build:
+      context: .
+      dockerfile: evals/Dockerfile
+    profiles: [knowledge]
+    read_only: true
+    tmpfs:
+      - /tmp
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./evals/datasets:/evals/datasets:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "-m", "scam_shield.ingest"]
+
   checker:
     build:
       context: .
@@ -47,3 +82,6 @@ services:
         required: false
     ports:
       - "127.0.0.1:${SCAM_SHIELD_WEB_PORT:-8080}:8080"
+
+volumes:
+  knowledge-data:

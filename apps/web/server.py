@@ -5,6 +5,7 @@ Listens on this machine only by default. Message text is never logged or stored.
 
 import argparse
 import json
+import os
 import re
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -12,6 +13,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from scam_shield.checker import CHECK_FAILED, MAX_MESSAGE_CHARS, RESULT_TEXT, check_message, client_from_env
+from scam_shield.knowledge import knowledge_from_env
 
 STATIC_DIR = Path(__file__).parent / "static"
 STATIC_FILES = {
@@ -103,7 +105,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._send_json(503, {"error": "The checker isn't set up yet. Add an API key to .env."})
 
         try:
-            result = check_message(message, client)
+            result = check_message(message, client, self.server.knowledge)
         except Exception as error:
             # A bug must still give the "couldn't check" wording. Only the type is logged.
             return self._send_json(
@@ -115,7 +117,7 @@ class Handler(BaseHTTPRequestHandler):
             200,
             {"status": result.status, "text": result.text, "reasons": result.reasons},
             f"status={result.status} error={result.error or 'none'} "
-            f"latency_ms={result.latency_ms} cost_usd={result.cost_usd}",
+            f"latency_ms={result.latency_ms} cost_usd={result.cost_usd} patterns={result.knowledge_used}",
         )
 
 
@@ -127,9 +129,10 @@ class Server(ThreadingHTTPServer):
         print(f"Request failed: {sys.exc_info()[0].__name__}", file=sys.stderr)
 
 
-def make_server(client, host="127.0.0.1", port=8080):
+def make_server(client, host="127.0.0.1", port=8080, knowledge=None):
     server = Server((host, port), Handler)
     server.client = client
+    server.knowledge = knowledge
     return server
 
 
@@ -142,7 +145,8 @@ def main(argv=None):
     client = client_from_env()
     if client is None:
         print("OPENROUTER_API_KEY is not set, so checks will be refused.", file=sys.stderr)
-    server = make_server(client, args.host, args.port)
+    knowledge = knowledge_from_env() if os.environ.get("SCAM_SHIELD_KNOWLEDGE") == "on" else None
+    server = make_server(client, args.host, args.port, knowledge)
     print(f"Listening on {args.host}:{args.port}", file=sys.stderr)
     try:
         server.serve_forever()

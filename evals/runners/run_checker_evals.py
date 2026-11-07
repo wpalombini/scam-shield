@@ -1,6 +1,6 @@
 """Run the checker over the labelled dataset and red-team set, then write a report.
 
-Usage: run_checker_evals.py [--limit N] [--max-per-minute N]
+Usage: run_checker_evals.py [--limit N] [--max-per-minute N] [--knowledge]
 Reports hold record ids and numbers only, never message text. Each run costs money.
 """
 
@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from scam_shield.checker import CHECK_FAILED, NO_RED_FLAGS, RED_FLAGS, check_message, client_from_env
+from scam_shield.knowledge import knowledge_from_env
 from validate_dataset import load_dataset
 
 DATASET_DIR = "datasets"
@@ -77,6 +78,11 @@ def build_report(pairs, redteam_pairs, model):
         "cost_usd_total": round(cost, 6),
         "cost_usd_per_check": round(cost / len(all_results), 6) if all_results else None,
         "latency_ms_p95": _percentile([res.latency_ms for res in completed], 95),
+        "knowledge": {
+            "checks_with_patterns": sum(res.knowledge_used > 0 for res in all_results),
+            "patterns_used": sum(res.knowledge_used for res in all_results),
+            "failed_lookups": sum(res.knowledge_failed for res in all_results),
+        },
     }
 
 
@@ -97,6 +103,8 @@ def summarise(report):
             f"Errors: {', '.join(report['errors']) or 'none'}",
             f"Cost: ${report['cost_usd_total']} total, ${report['cost_usd_per_check']} per check",
             f"Latency p95: {report['latency_ms_p95']} ms",
+            f"Knowledge: {report['knowledge']['checks_with_patterns']} checks used patterns, "
+            f"{report['knowledge']['failed_lookups']} failed lookups",
             "Small, partly synthetic set: treat these as a smoke test, not a performance claim.",
         ]
     )
@@ -109,16 +117,16 @@ def _positive_int(value):
     return number
 
 
-def _run(records, client, max_per_minute=None):
+def _run(records, client, max_per_minute=None, knowledge=None):
     if max_per_minute is not None:
         results = []
         for record in records:
             started = time.monotonic()
-            results.append(check_message(record["text"], client))
+            results.append(check_message(record["text"], client, knowledge))
             time.sleep(max(0, 60 / max_per_minute - (time.monotonic() - started)))
         return list(zip(records, results))
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        results = list(pool.map(lambda rec: check_message(rec["text"], client), records))
+        results = list(pool.map(lambda rec: check_message(rec["text"], client, knowledge), records))
     return list(zip(records, results))
 
 
@@ -128,12 +136,20 @@ def main(argv=None):
     parser.add_argument(
         "--max-per-minute", type=_positive_int, help="check one at a time, staying under a provider's rate limit"
     )
+    parser.add_argument("--knowledge", action="store_true", help="give the checker known scam patterns")
     args = parser.parse_args(argv)
 
     client = client_from_env()
     if client is None:
         print("OPENROUTER_API_KEY is not set. Copy .env.example to .env and add a key.", file=sys.stderr)
         return 2
+
+    knowledge = None
+    if args.knowledge:
+        knowledge = knowledge_from_env()
+        if knowledge is None:
+            print("SCAM_SHIELD_DATABASE_URL is not set.", file=sys.stderr)
+            return 2
 
     records, errors = load_dataset(DATASET_DIR)
     if errors or not records:
@@ -145,12 +161,15 @@ def main(argv=None):
         for line in Path(REDTEAM_FILE).read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    pairs = _run(records[: args.limit] if args.limit else records, client, args.max_per_minute)
-    redteam_pairs = _run(redteam, client, args.max_per_minute)
+    pairs = _run(records[: args.limit] if args.limit else records, client, args.max_per_minute, knowledge)
+    redteam_pairs = _run(redteam, client, args.max_per_minute, knowledge)
 
     report = build_report(pairs, redteam_pairs, client.model)
+    if knowledge is not None:
+        report["knowledge"]["patterns_available"] = knowledge.variant_count()
     report["created_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    name = f"{report['created_at'].replace(':', '')}-{client.model.replace('/', '_')}.json"
+    suffix = "-knowledge" if knowledge is not None else ""
+    name = f"{report['created_at'].replace(':', '')}-{client.model.replace('/', '_')}{suffix}.json"
     path = Path(REPORT_DIR) / name
     path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
