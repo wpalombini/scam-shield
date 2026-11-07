@@ -99,6 +99,26 @@ class IngestDatabaseTests(unittest.TestCase):
         self.assertEqual(failures, 1)
         self.assertEqual(self.titles(), ["Old"])
 
+    def test_earlier_extractions_survive_a_crash_later_in_the_run(self):
+        store_documents(self.connection, [document(OPEN), document(HELD_OUT)])
+        self.connection.commit()
+
+        class CrashOnSecond(FakeClient):
+            def complete(self, messages, response_format=None, max_tokens=None):
+                self.calls += 1
+                if self.calls == 2:
+                    raise RuntimeError("crash")
+                return self.content, 0.001
+
+        with self.assertRaises(RuntimeError):
+            extract_pending(self.connection, CrashOnSecond(output("First")))
+        self.connection.rollback()
+        self.assertEqual(self.titles(), ["First"])
+
+    def test_nul_characters_from_the_model_can_be_stored(self):
+        (added, failures), _ = self.ingest([document(OPEN)], output("Bad\u0000title"))
+        self.assertEqual((added, failures), (1, 0))
+
     def test_withdrawn_ato_alerts_are_removed_unless_the_page_looks_broken(self):
         urls = [f"https://www.ato.gov.au/{i}" for i in range(4)]
         self.ingest([document(url, source="ato") for url in urls], output("Alert"))

@@ -46,6 +46,7 @@ Keep eval messages out of the knowledge base, ideally using newer alerts, or sco
 | Test whether patterns make new scam types easier to miss | One scam was missed with patterns and none without | Before turning the knowledge base on by default |
 | Add a prompt-only eval setting and repeat the comparison | The prompt-only runs used a temporary script | Before promoting the prompt line |
 | Read-only database role for the checker and page, passing its URL only where needed | Both currently share one full-access URL | Before launch |
+| Try prompt caching for the patterns | They're identical on every check, and sending them costs about 5 times as much per check | During tuning |
 | Competitor benchmark: Norton Genie, Scamio, Truyu | Needs a useful checker and dataset first | After the first reliable eval |
 
 ## After the data foundation: rest of Phase 1
