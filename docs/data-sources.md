@@ -21,7 +21,7 @@ Tested from our test environment with an identified user agent. Working policy, 
 | [ASIC investor alert list](https://moneysmart.gov.au/check-and-report-scams/investor-alert-list) | [JSON download](https://static.moneysmart.gov.au/_data/investor-alert-list.json): 4,686 entries, with 4,331 listing websites, 1,977 phones and 620 marked as imposters | 125 added in the last 30 days, the newest on 5 Nov 2026. Investment scams only. No open licence identified, and the [copyright page](https://moneysmart.gov.au/about-us/copyright) says some material needs permission | **Local only** until its terms are clear. Strong candidate for exact website and phone matching |
 | [Westpac alerts](https://www.westpac.com.au/security/latest-scams/) | Bank impersonation examples | Oct, Jul, May and Mar 2026. Copyright notice; full terms not read | **Second bank to add**, on the same basis as CommBank |
 | [phishunt.io](https://phishunt.io/tos) | About 1,020 active phishing links | Terms release the feed data as CC0, though the docs page also links a CC BY-NC-SA licence we couldn't tie to anything. A rough keyword match found only 6 AU-related links | **Later**, for the URL check agent |
-| [Google Web Risk](https://cloud.google.com/web-risk/pricing) | URL lookup | First 100,000 lookups a month are free, then US$0.50 per 1,000. API not tested | **Later**, for the URL check agent |
+| [Google Web Risk](https://cloud.google.com/web-risk/pricing) | URL lookup | First 100,000 lookups a month are free, then US$0.50 per 1,000. API not tested | **Next to try**, after testing with real messages, for the URL check agent |
 | [crt.sh](https://crt.sh) | Certificate logs for look-alike domains | Query works | **Later**. Not needed for the first knowledge base |
 | [Cyber.gov.au](https://www.cyber.gov.au/alerts-and-advisories) | Technical alerts | Direct requests fail, and the page loads in a browser. Few word-for-word scam messages | **Skip for now** |
 
@@ -40,13 +40,13 @@ Tested from our test environment with an identified user agent. Working policy, 
 
 ## Sender and link lookups (researched 7 Nov 2026)
 
-Desk research from public docs, not tested with real lookups. Prices are USD. No service found has shown Australian scam-report coverage, and no public Australian government number feed was found. Treat any hit as a weak signal that can add suspicion, and a clean result as adding nothing.
+Desk research from public docs, not tested with real lookups. The exception is libphonenumber, which was tried on AI-written eval cases only. Prices are USD. No service found has shown Australian scam-report coverage, and no public Australian government number feed was found. Treat any hit as a weak signal that can add suspicion, and a clean result as adding nothing.
 
 | Service | Gives | Cost | Decision |
 |---|---|---|---|
 | [libphonenumber](https://github.com/google/libphonenumber) | Number type, locally. Doesn't track current carriers | Free | **Tried and dropped**: didn't improve eval results. See the tracker |
-| [Google Web Risk](https://cloud.google.com/web-risk/pricing) | Known-bad URLs | 100,000 free a month (Lookup API) | **Next to try**, for links in messages |
-| [RDAP](https://about.rdap.org/) | Domain age for many TLDs. [.au creation dates are hidden and automated queries prohibited](https://www.auda.org.au/whois-policy) | Free | **Use later**, for non-.au domains |
+| [Google Web Risk](https://cloud.google.com/web-risk/pricing) | Known-bad URLs | 100,000 free a month (Lookup API) | **Next to try**, after testing with real messages, for links in messages |
+| [RDAP](https://about.rdap.org/) | Domain age for many TLDs. [.au creation dates are hidden and automated queries prohibited](https://www.auda.org.au/whois-policy) | Free | **Next to try**, after testing with real messages, for non-.au domains |
 | [IPQualityScore](https://www.ipqualityscore.com/plans) | Phone and email fraud scores | Free 1,000 a month. Paid about $99 for 5,000, from a third-party source | **Trial only.** [Terms](https://www.ipqualityscore.com/terms-of-service) bar republishing responses to third parties and let IPQS use submitted data to improve its risk models, and [retention is about a year](https://www.ipqualityscore.com/privacy-policy) |
 | [Twilio Lookup](https://www.twilio.com/en-us/user-authentication-identity/pricing/lookup) | Line type and carrier, no reputation | $0.008 per request | **Fallback** |
 | Hiya, Telesign, Prove, tellows | Reputation scores | Not checked | **Not assessed**; needs sales contact |
